@@ -27,6 +27,12 @@
   const cursorRing   = document.getElementById('cursorRing');
 
   if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  // Set hero image
+  const heroPhoto = document.getElementById('heroPhoto');
+  if (heroPhoto && cfg.HERO_IMAGE) {
+    heroPhoto.src = cfg.HERO_IMAGE;
+  }
   applyConfig();
 
   function applyConfig() {

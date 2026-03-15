@@ -93,28 +93,46 @@
     /* Hero */
     .hero {
       height: 100vh;
-      display: flex;
-      align-items: flex-end;
-      padding: 0 48px 64px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       position: relative;
       overflow: hidden;
     }
 
-    .hero-bg {
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 70% 40%, rgba(139,94,60,0.12) 0%, transparent 60%),
-                  radial-gradient(ellipse at 20% 80%, rgba(201,169,110,0.06) 0%, transparent 50%);
+    .hero-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 48px 64px;
+      position: relative;
+      z-index: 1;
     }
 
-    .hero-line {
+    .hero-right {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-photo {
       position: absolute;
-      top: 0; bottom: 0;
-      left: 55%;
-      width: 1px;
-      background: linear-gradient(to bottom, transparent, var(--border) 20%, var(--border) 80%, transparent);
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      filter: brightness(0.75) saturate(0.85);
+      opacity: 0;
+      animation: fadeIn 1.2s 0.4s forwards;
     }
 
-    .hero-content { position: relative; z-index: 1; max-width: 560px; }
+    .hero-photo-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to right, var(--bg) 0%, transparent 40%),
+                  linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 50%);
+    }
+
+    .hero-content { position: relative; z-index: 1; }
 
     .hero-eyebrow {
       font-size: 10px;
@@ -128,7 +146,7 @@
 
     .hero-title {
       font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(52px, 7vw, 96px);
+      font-size: clamp(48px, 5vw, 86px);
       font-weight: 300;
       line-height: 0.95;
       letter-spacing: -0.02em;
@@ -141,14 +159,30 @@
     .hero-desc {
       color: var(--muted);
       line-height: 1.8;
-      max-width: 380px;
+      max-width: 340px;
+      margin-bottom: 32px;
       opacity: 0;
       animation: fadeUp 1s 0.7s forwards;
     }
 
+    .hero-cta {
+      display: inline-block;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text);
+      text-decoration: none;
+      border-bottom: 1px solid var(--accent);
+      padding-bottom: 4px;
+      opacity: 0;
+      animation: fadeUp 1s 0.9s forwards;
+      transition: color 0.3s;
+    }
+    .hero-cta:hover { color: var(--accent); }
+
     .scroll-hint {
       position: absolute;
-      bottom: 48px; right: 48px;
+      bottom: 48px; left: 48px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -158,7 +192,7 @@
       letter-spacing: 0.2em;
       text-transform: uppercase;
       opacity: 0;
-      animation: fadeIn 1s 1.2s forwards;
+      animation: fadeIn 1s 1.4s forwards;
     }
     .scroll-line {
       width: 1px; height: 48px;
@@ -166,7 +200,13 @@
       animation: scrollPulse 2s 1.5s infinite;
     }
 
-    /* Gallery Section */
+    @media (max-width: 768px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero-right { display: none; }
+      .hero-left { padding: 0 24px 48px; }
+    }
+
+        /* Gallery Section */
     .gallery-section {
       padding: 80px 48px 120px;
     }
@@ -508,16 +548,21 @@
   </header>
 
   <section class="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-line"></div>
-    <div class="hero-content">
-      <p class="hero-eyebrow">Visual storytelling</p>
-      <h1 class="hero-title">Light &<br><em>Shadow</em></h1>
-      <p class="hero-desc">A collection of moments captured in time — where composition meets emotion and the ordinary becomes extraordinary.</p>
+    <div class="hero-left">
+      <div class="hero-content">
+        <p class="hero-eyebrow">Visual storytelling</p>
+        <h1 class="hero-title">Light &<br><em>Shadow</em></h1>
+        <p class="hero-desc">A collection of moments captured in time — where composition meets emotion and the ordinary becomes extraordinary.</p>
+        <a href="#gallery" class="hero-cta">View Work</a>
+      </div>
+      <div class="scroll-hint">
+        <div class="scroll-line"></div>
+        <span>Scroll</span>
+      </div>
     </div>
-    <div class="scroll-hint">
-      <div class="scroll-line"></div>
-      <span>Scroll</span>
+    <div class="hero-right">
+      <img class="hero-photo" id="heroPhoto" src="" alt="Featured photograph">
+      <div class="hero-photo-overlay"></div>
     </div>
   </section>
 

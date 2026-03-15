@@ -10,10 +10,14 @@ window.PORTFOLIO_CONFIG = {
   // Leave as empty string "" until you've set up R2
   R2_BUCKET_URL: "https://pub-6c92cdd67a854ed7aef02bdc1aa2fd14.r2.dev",
 
+  // Hero image — paste the full R2 URL of the photo you want in the hero panel
+  // Example: "https://pub-abc123.r2.dev/portraits/my-best-shot.jpg"
+  HERO_IMAGE: "https://pub-6c92cdd67a854ed7aef02bdc1aa2fd14.r2.dev/people-street-happenings/billy-gibbons.jpeg",
+
   // ---- Optional Settings ----
 
   // Your name (shown in footer + page title)
-  PHOTOGRAPHER_NAME: "Greenberg Photo",
+  PHOTOGRAPHER_NAME: "Greenberg Photography",
 
   // Subtitle shown in footer
   SUBTITLE: "Photography Portfolio",
