@@ -265,13 +265,18 @@
       img.alt = photo.name;
       img.loading = 'lazy';
 
-      // Once image loads, set flex-basis from natural aspect ratio
-      // so portrait images are narrow and landscape images are wide —
-      // all at the same fixed row height
+      // Once image loads, set width from natural aspect ratio.
+      // Item height is fixed at 320px in CSS.
+      // Width = height * (naturalWidth / naturalHeight) so the full
+      // image fits without any cropping or stretching.
       img.addEventListener('load', () => {
-        const ratio = img.naturalWidth / img.naturalHeight;
-        const rowHeight = 320;
-        item.style.flexBasis = Math.round(ratio * rowHeight) + 'px';
+        if (img.naturalWidth && img.naturalHeight) {
+          const ratio = img.naturalWidth / img.naturalHeight;
+          const itemHeight = item.offsetHeight || 320;
+          const w = Math.round(ratio * itemHeight);
+          item.style.width = w + 'px';
+          item.style.flexBasis = w + 'px';
+        }
       });
 
       const overlay = document.createElement('div');
