@@ -185,7 +185,9 @@
     return keys
       .filter(key => {
         const ext = key.split('.').pop().toLowerCase();
-        return EXTENSIONS.includes(ext) && !key.startsWith('.');
+        const folder = key.split('/')[0];
+        // Exclude hero folder and hidden files from the gallery
+        return EXTENSIONS.includes(ext) && !key.startsWith('.') && folder !== HERO_FOLDER;
       })
       .sort()
       .map(key => {
@@ -257,13 +259,30 @@
     photos.forEach((photo, i) => {
       const item = document.createElement('div');
       item.className = 'gallery-item';
-      item.innerHTML = `
-        <img src="${photo.url}" alt="${photo.name}" loading="lazy">
-        <div class="gallery-item-overlay">
-          <span class="gallery-item-category">${photo.category === 'uncategorised' ? '' : photo.category}</span>
-          <span class="gallery-item-name">${photo.name}</span>
-        </div>
+
+      const img = document.createElement('img');
+      img.src = photo.url;
+      img.alt = photo.name;
+      img.loading = 'lazy';
+
+      // Once image loads, set flex-basis from natural aspect ratio
+      // so portrait images are narrow and landscape images are wide —
+      // all at the same fixed row height
+      img.addEventListener('load', () => {
+        const ratio = img.naturalWidth / img.naturalHeight;
+        const rowHeight = 320;
+        item.style.flexBasis = Math.round(ratio * rowHeight) + 'px';
+      });
+
+      const overlay = document.createElement('div');
+      overlay.className = 'gallery-item-overlay';
+      overlay.innerHTML = `
+        <span class="gallery-item-category">${photo.category === 'uncategorised' ? '' : photo.category}</span>
+        <span class="gallery-item-name">${photo.name}</span>
       `;
+
+      item.appendChild(img);
+      item.appendChild(overlay);
       item.addEventListener('click', () => openLightbox(i));
       item.addEventListener('mouseenter', () => setCursorHover(true));
       item.addEventListener('mouseleave', () => setCursorHover(false));
