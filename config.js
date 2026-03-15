@@ -10,14 +10,15 @@ window.PORTFOLIO_CONFIG = {
   // Leave as empty string "" until you've set up R2
   R2_BUCKET_URL: "https://pub-6c92cdd67a854ed7aef02bdc1aa2fd14.r2.dev",
 
-  // Hero image — paste the full R2 URL of the photo you want in the hero panel
-  // Example: "https://pub-abc123.r2.dev/portraits/my-best-shot.jpg"
-  HERO_IMAGE: "https://pub-6c92cdd67a854ed7aef02bdc1aa2fd14.r2.dev/people-street-happenings/billy-gibbons.jpeg",
+  // Hero slideshow folder — the name of the R2 folder containing your hero photos
+  // Create a folder in R2 (e.g. "hero"), upload your best 10 shots into it,
+  // and they will cycle automatically with a Ken Burns effect.
+  HERO_FOLDER: "hero",
 
   // ---- Optional Settings ----
 
   // Your name (shown in footer + page title)
-  PHOTOGRAPHER_NAME: "Greenberg Photography",
+  PHOTOGRAPHER_NAME: "Marc Greenberg Photo",
 
   // Subtitle shown in footer
   SUBTITLE: "Photography Portfolio",

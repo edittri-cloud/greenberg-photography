@@ -28,11 +28,96 @@
 
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-  // Set hero image
-  const heroPhoto = document.getElementById('heroPhoto');
-  if (heroPhoto && cfg.HERO_IMAGE) {
-    heroPhoto.src = cfg.HERO_IMAGE;
+  // ---- Hero Slideshow ----
+  const heroRight   = document.getElementById('heroRight');
+  const heroDots    = document.getElementById('heroDots');
+  const HERO_FOLDER = cfg.HERO_FOLDER || 'hero';
+  const SLIDE_INTERVAL = 4000; // 4 seconds
+  let heroSlides = [];
+  let heroIndex  = 0;
+  let heroTimer  = null;
+
+  async function loadHeroSlides() {
+    if (!BUCKET_URL) return;
+    try {
+      const res = await fetch('/api');
+      if (!res.ok) return;
+      const data = await res.json();
+      const photos = (data.photos || []).filter(key => {
+        const folder = key.split('/')[0];
+        const ext = key.split('.').pop().toLowerCase();
+        return folder === HERO_FOLDER && EXTENSIONS.includes(ext);
+      });
+      if (photos.length === 0) return;
+
+      heroSlides = photos;
+      buildHeroSlides();
+      startHeroSlideshow();
+    } catch (e) {
+      console.warn('Hero slideshow load failed:', e);
+    }
   }
+
+  function buildHeroSlides() {
+    // Remove any existing slides (keep overlay and dots)
+    heroRight.querySelectorAll('.hero-slide').forEach(el => el.remove());
+    heroDots.innerHTML = '';
+
+    heroSlides.forEach((key, i) => {
+      const url = BUCKET_URL + '/' + key.split('/').map(encodeURIComponent).join('/');
+      const img = document.createElement('img');
+      img.className = 'hero-slide';
+      img.src = url;
+      img.alt = '';
+      img.loading = i === 0 ? 'eager' : 'lazy';
+      // Insert before the overlay
+      heroRight.insertBefore(img, heroRight.querySelector('.hero-photo-overlay'));
+
+      const dot = document.createElement('button');
+      dot.className = 'hero-dot' + (i === 0 ? ' active' : '');
+      dot.addEventListener('click', () => goToSlide(i));
+      heroDots.appendChild(dot);
+    });
+  }
+
+  function goToSlide(index) {
+    const slides = heroRight.querySelectorAll('.hero-slide');
+    const dots   = heroDots.querySelectorAll('.hero-dot');
+
+    // Mark current as leaving
+    slides[heroIndex].classList.remove('active');
+    slides[heroIndex].classList.add('leaving');
+    dots[heroIndex].classList.remove('active');
+
+    heroIndex = index;
+
+    // Force reflow so animation restarts
+    slides[heroIndex].classList.remove('leaving');
+    void slides[heroIndex].offsetWidth;
+    slides[heroIndex].classList.add('active');
+    dots[heroIndex].classList.add('active');
+
+    // Clean up leaving class after transition
+    setTimeout(() => {
+      slides.forEach(s => s.classList.remove('leaving'));
+    }, 1200);
+  }
+
+  function startHeroSlideshow() {
+    if (heroSlides.length === 0) return;
+    // Show first slide immediately
+    const slides = heroRight.querySelectorAll('.hero-slide');
+    if (slides[0]) slides[0].classList.add('active');
+
+    if (heroSlides.length === 1) return; // No need to cycle
+
+    heroTimer = setInterval(() => {
+      const next = (heroIndex + 1) % heroSlides.length;
+      goToSlide(next);
+    }, SLIDE_INTERVAL);
+  }
+
+  loadHeroSlides();
   applyConfig();
 
   function applyConfig() {
