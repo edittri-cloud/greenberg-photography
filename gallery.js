@@ -74,7 +74,7 @@
     showLoading();
     try {
       // Use the Pages Function to list photos server-side (avoids R2 public listing restrictions)
-      const res = await fetch('/api/photos');
+      const res = await fetch('/api');
       if (!res.ok) throw new Error('Could not load photo list (status ' + res.status + ')');
       const data = await res.json();
       if (data.error) throw new Error(data.error);

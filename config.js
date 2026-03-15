@@ -6,14 +6,14 @@
 window.PORTFOLIO_CONFIG = {
 
   // Your R2 public bucket URL (no trailing slash)
-  // Example: "https://pub-6c92cdd67a854ed7aef02bdc1aa2fd14.r2.dev"
+  // Example: "https://pub-abc123.r2.dev" or "https://photos.yourdomain.com"
   // Leave as empty string "" until you've set up R2
   R2_BUCKET_URL: "https://pub-6c92cdd67a854ed7aef02bdc1aa2fd14.r2.dev",
 
   // ---- Optional Settings ----
 
   // Your name (shown in footer + page title)
-  PHOTOGRAPHER_NAME: "Greenberg Photography",
+  PHOTOGRAPHER_NAME: "Greenberg Photo",
 
   // Subtitle shown in footer
   SUBTITLE: "Photography Portfolio",
