@@ -347,83 +347,91 @@
       letter-spacing: 0.1em;
     }
 
-    /* ---- Carousel View ---- */
+    /* ---- Scrolling Strip Carousel ---- */
     .carousel-wrap {
       position: relative;
       width: 100%;
-      background: var(--bg2);
+      overflow: hidden;
     }
 
-    .carousel-stage {
-      position: relative;
-      width: 100%;
-      height: 75vh;
-      overflow: hidden;
+    /* The scrolling track */
+    .carousel-strip {
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 16px;
+      overflow-x: auto;
+      overflow-y: visible;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+      padding: 40px 48px;
+      cursor: grab;
+    }
+    .carousel-strip:active { cursor: grabbing; }
+    .carousel-strip::-webkit-scrollbar { display: none; }
+
+    /* Each image card in the strip */
+    .strip-item {
+      flex-shrink: 0;
+      height: 340px;
+      position: relative;
+      overflow: visible;
+      transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  opacity 0.4s ease;
+      opacity: 0.55;
+      transform: scale(0.88);
+      cursor: none;
     }
 
-    .carousel-slide {
+    .strip-item.focused {
+      opacity: 1;
+      transform: scale(1.0);
+      z-index: 2;
+    }
+
+    .strip-item img {
+      height: 100%;
+      width: auto;
+      display: block;
+      object-fit: contain;
+      filter: brightness(0.85);
+      transition: filter 0.4s;
+      pointer-events: none;
+      -webkit-user-drag: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .strip-item.focused img { filter: brightness(1); }
+
+    /* Click hint overlay on focused item */
+    .strip-item-overlay {
       position: absolute;
       inset: 0;
+      opacity: 0;
+      transition: opacity 0.3s;
       display: flex;
       align-items: center;
       justify-content: center;
-      opacity: 0;
-      transition: opacity 0.6s ease;
-      pointer-events: none;
     }
 
-    .carousel-slide.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
+    .strip-item.focused:hover .strip-item-overlay { opacity: 1; }
 
-    .carousel-slide img {
-      max-width: 100%;
-      max-height: 75vh;
-      width: auto;
-      height: auto;
-      object-fit: contain;
-      display: block;
-      filter: brightness(0.95);
-      transition: filter 0.3s;
-    }
-
-    .carousel-slide.active img { filter: brightness(1); }
-
-    /* Carousel nav arrows */
-    .carousel-arrow {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      z-index: 10;
-      background: rgba(10,10,10,0.6);
-      border: 1px solid var(--border);
-      color: var(--muted);
-      width: 48px; height: 48px;
+    .strip-expand-icon {
+      width: 44px; height: 44px;
+      border: 1px solid rgba(232,224,213,0.6);
       display: flex; align-items: center; justify-content: center;
-      font-size: 20px;
-      cursor: none;
-      transition: border-color 0.3s, color 0.3s, background 0.3s;
+      font-size: 16px;
+      color: var(--text);
+      background: rgba(0,0,0,0.4);
       backdrop-filter: blur(4px);
     }
-    .carousel-arrow:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-      background: rgba(10,10,10,0.85);
-    }
-    .carousel-arrow-prev { left: 20px; }
-    .carousel-arrow-next { right: 20px; }
 
-    /* Carousel caption */
+    /* Caption below strip */
     .carousel-caption {
-      padding: 16px 24px;
+      padding: 4px 48px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-top: 1px solid var(--border);
     }
 
     .carousel-name {
@@ -431,6 +439,7 @@
       font-size: 17px;
       font-style: italic;
       color: var(--text);
+      transition: opacity 0.3s;
     }
 
     .carousel-category {
@@ -446,32 +455,79 @@
       color: var(--muted);
     }
 
-    /* Thumbnail strip */
-    .carousel-thumbs {
-      display: flex;
-      gap: 6px;
-      padding: 12px 0 0;
-      overflow-x: auto;
-      scrollbar-width: none;
+    /* ---- Fullscreen Viewer ---- */
+    .fullscreen-viewer {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
     }
-    .carousel-thumbs::-webkit-scrollbar { display: none; }
+    .fullscreen-viewer.open { display: flex; }
 
-    .carousel-thumb {
-      flex-shrink: 0;
-      height: 56px;
+    .fullscreen-viewer img {
+      max-width: 100vw;
+      max-height: 100vh;
       width: auto;
-      cursor: none;
-      opacity: 0.4;
-      transition: opacity 0.3s;
-      border: 1px solid transparent;
+      height: auto;
       object-fit: contain;
-      background: var(--bg2);
+      display: block;
+      animation: fsIn 0.3s ease;
+      pointer-events: none;
+      -webkit-user-drag: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
-    .carousel-thumb.active {
-      opacity: 1;
-      border-color: var(--accent);
+
+    @keyframes fsIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to   { opacity: 1; transform: scale(1); }
     }
-    .carousel-thumb:hover { opacity: 0.75; }
+
+    .fs-close {
+      position: fixed;
+      top: 24px; right: 32px;
+      background: none;
+      border: none;
+      color: rgba(232,224,213,0.5);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: none;
+      transition: color 0.3s;
+      z-index: 10;
+    }
+    .fs-close:hover { color: var(--text); }
+
+    .fs-arrow {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: 1px solid rgba(232,224,213,0.15);
+      color: rgba(232,224,213,0.4);
+      width: 52px; height: 52px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      cursor: none;
+      transition: border-color 0.3s, color 0.3s;
+      z-index: 10;
+    }
+    .fs-arrow:hover { border-color: var(--accent); color: var(--accent); }
+    .fs-prev { left: 20px; }
+    .fs-next { right: 20px; }
+
+    .fs-counter {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: rgba(232,224,213,0.4);
+    }
 
     /* ---- Grid View (kept for reference/future) ---- */
     .gallery-grid {
@@ -832,13 +888,11 @@
       </div>
     </div>
 
-    <!-- Carousel View (default) -->
+    <!-- Scrolling Strip Carousel -->
     <div id="carouselWrap" class="carousel-wrap">
-      <div class="carousel-stage" id="carouselStage">
-        <!-- slides injected by JS -->
+      <div class="carousel-strip" id="carouselStrip">
+        <!-- items injected by JS -->
       </div>
-      <button class="carousel-arrow carousel-arrow-prev" id="carouselPrev">&#8249;</button>
-      <button class="carousel-arrow carousel-arrow-next" id="carouselNext">&#8250;</button>
       <div class="carousel-caption">
         <div>
           <div class="carousel-category" id="carouselCategory"></div>
@@ -846,11 +900,19 @@
         </div>
         <span class="carousel-counter" id="carouselCounter"></span>
       </div>
-      <div class="carousel-thumbs" id="carouselThumbs"></div>
     </div>
 
     <!-- Grid View (hidden by default) -->
     <div id="galleryGrid" class="gallery-grid" style="display:none"></div>
+
+    <!-- Fullscreen Viewer -->
+    <div class="fullscreen-viewer" id="fsViewer">
+      <button class="fs-close" id="fsClose">Close ✕</button>
+      <button class="fs-arrow fs-prev" id="fsPrev">&#8249;</button>
+      <img id="fsImg" src="" alt="">
+      <button class="fs-arrow fs-next" id="fsNext">&#8250;</button>
+      <div class="fs-counter" id="fsCounter"></div>
+    </div>
   </section>
 
   <footer>
@@ -870,7 +932,7 @@
     <div class="lightbox-category" id="lightboxCategory"></div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/exifr/dist/lite.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exifr/dist/full.umd.js"></script>
   <script src="config.js"></script>
   <script src="gallery.js"></script>
   <script>

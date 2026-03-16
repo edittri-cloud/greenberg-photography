@@ -1,36 +1,40 @@
 // ============================================================
-//  GALLERY.JS — Dynamic photo loading from Cloudflare R2
-//              Carousel view (default) + Grid view
+//  GALLERY.JS — Scrolling strip carousel + fullscreen viewer
 // ============================================================
 
 (function () {
   'use strict';
 
-  const cfg        = window.PORTFOLIO_CONFIG || {};
-  const BUCKET_URL = (cfg.R2_BUCKET_URL || '').replace(/\/$/, '');
-  const EXTENSIONS = cfg.SUPPORTED_EXTENSIONS || ['jpg','jpeg','png','webp','avif'];
+  const cfg         = window.PORTFOLIO_CONFIG || {};
+  const BUCKET_URL  = (cfg.R2_BUCKET_URL || '').replace(/\/$/, '');
+  const EXTENSIONS  = cfg.SUPPORTED_EXTENSIONS || ['jpg','jpeg','png','webp','avif'];
   const HERO_FOLDER = cfg.HERO_FOLDER || 'hero';
 
-  // DOM refs
-  const countEl        = document.getElementById('photoCount');
-  const configBanner   = document.getElementById('configBanner');
-  const filterBar      = document.getElementById('filterBar');
-  const yearEl         = document.getElementById('year');
-  const cursor         = document.getElementById('cursor');
-  const cursorRing     = document.getElementById('cursorRing');
-  const carouselWrap   = document.getElementById('carouselWrap');
-  const carouselStage  = document.getElementById('carouselStage');
-  const carouselPrev   = document.getElementById('carouselPrev');
-  const carouselNext   = document.getElementById('carouselNext');
-  const carouselName   = document.getElementById('carouselName');
-  const carouselCat    = document.getElementById('carouselCategory');
-  const carouselCtr    = document.getElementById('carouselCounter');
-  const carouselThumbs = document.getElementById('carouselThumbs');
-  const grid           = document.getElementById('galleryGrid');
-  const heroRight      = document.getElementById('heroRight');
-  const heroDots       = document.getElementById('heroDots');
-  const sortSelect     = document.getElementById('sortSelect');
-  const sortLoading    = document.getElementById('sortLoading');
+  // DOM
+  const countEl       = document.getElementById('photoCount');
+  const configBanner  = document.getElementById('configBanner');
+  const filterBar     = document.getElementById('filterBar');
+  const yearEl        = document.getElementById('year');
+  const cursor        = document.getElementById('cursor');
+  const cursorRing    = document.getElementById('cursorRing');
+  const carouselWrap  = document.getElementById('carouselWrap');
+  const carouselStrip = document.getElementById('carouselStrip');
+  const carouselName  = document.getElementById('carouselName');
+  const carouselCat   = document.getElementById('carouselCategory');
+  const carouselCtr   = document.getElementById('carouselCounter');
+  const grid          = document.getElementById('galleryGrid');
+  const heroRight     = document.getElementById('heroRight');
+  const heroDots      = document.getElementById('heroDots');
+  const sortSelect    = document.getElementById('sortSelect');
+  const sortLoading   = document.getElementById('sortLoading');
+
+  // Fullscreen viewer
+  const fsViewer = document.getElementById('fsViewer');
+  const fsImg    = document.getElementById('fsImg');
+  const fsClose  = document.getElementById('fsClose');
+  const fsPrev   = document.getElementById('fsPrev');
+  const fsNext   = document.getElementById('fsNext');
+  const fsCtr    = document.getElementById('fsCounter');
 
   if (yearEl) yearEl.textContent = new Date().getFullYear();
   applyConfig();
@@ -66,19 +70,15 @@
   function setCursorHover(on) {
     cursor.classList.toggle('hover', on); cursorRing.classList.toggle('hover', on);
   }
-  [carouselPrev, carouselNext].forEach(el => {
-    if (!el) return;
-    el.addEventListener('mouseenter', () => setCursorHover(true));
-    el.addEventListener('mouseleave', () => setCursorHover(false));
-  });
 
   // ---- Data ----
   let allPhotos      = [];
   let filteredPhotos = [];
-  let carouselIndex  = 0;
+  let focusedIndex   = 0;
   let currentCategory = null;
-  let sortOrder      = 'default'; // 'default' | 'newest' | 'oldest'
+  let sortOrder      = 'default';
   let datesLoaded    = false;
+  let fsIndex        = 0;
 
   // ---- Init ----
   async function init() {
@@ -98,9 +98,6 @@
       if (allPhotos.length === 0) { showEmpty(); return; }
 
       buildFilterBar(allPhotos);
-      // filterAndRender is called inside buildFilterBar with the first category
-
-      // Read EXIF dates in background after gallery is displayed
       readExifDatesInBackground();
 
     } catch (err) {
@@ -109,9 +106,7 @@
     }
   }
 
-  function isImage(key) {
-    return EXTENSIONS.includes(key.split('.').pop().toLowerCase());
-  }
+  function isImage(key) { return EXTENSIONS.includes(key.split('.').pop().toLowerCase()); }
 
   function keyToPhoto(key) {
     const parts    = key.split('/');
@@ -119,28 +114,23 @@
     const filename = parts[parts.length - 1];
     const name     = filename.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
     const url      = BUCKET_URL + '/' + key.split('/').map(encodeURIComponent).join('/');
-    return { key, url, name, category };
+    return { key, url, name, category, date: null };
   }
 
   // ---- Hero Slideshow ----
-  let heroSlides = [];
-  let heroIndex  = 0;
+  let heroSlides = [], heroIndex = 0;
 
   function loadHeroSlides(keys) {
     if (!keys.length || !heroRight) return;
     heroSlides = keys;
     heroRight.querySelectorAll('.hero-slide').forEach(el => el.remove());
     if (heroDots) heroDots.innerHTML = '';
-
     keys.forEach((key, i) => {
       const url = BUCKET_URL + '/' + key.split('/').map(encodeURIComponent).join('/');
       const img = document.createElement('img');
-      img.className = 'hero-slide';
-      img.src = url;
-      img.alt = '';
+      img.className = 'hero-slide'; img.src = url; img.alt = '';
       img.loading = i === 0 ? 'eager' : 'lazy';
       heroRight.insertBefore(img, heroRight.querySelector('.hero-photo-overlay'));
-
       if (heroDots) {
         const dot = document.createElement('button');
         dot.className = 'hero-dot' + (i === 0 ? ' active' : '');
@@ -148,7 +138,6 @@
         heroDots.appendChild(dot);
       }
     });
-
     heroRight.querySelectorAll('.hero-slide')[0].classList.add('active');
     if (keys.length > 1) setInterval(() => heroGoTo((heroIndex + 1) % heroSlides.length), 4000);
   }
@@ -156,13 +145,11 @@
   function heroGoTo(index) {
     const slides = heroRight.querySelectorAll('.hero-slide');
     const dots   = heroDots ? heroDots.querySelectorAll('.hero-dot') : [];
-    slides[heroIndex].classList.remove('active');
-    slides[heroIndex].classList.add('leaving');
+    slides[heroIndex].classList.remove('active'); slides[heroIndex].classList.add('leaving');
     if (dots[heroIndex]) dots[heroIndex].classList.remove('active');
     heroIndex = index;
     void slides[heroIndex].offsetWidth;
-    slides[heroIndex].classList.remove('leaving');
-    slides[heroIndex].classList.add('active');
+    slides[heroIndex].classList.remove('leaving'); slides[heroIndex].classList.add('active');
     if (dots[heroIndex]) dots[heroIndex].classList.add('active');
     setTimeout(() => slides.forEach(s => s.classList.remove('leaving')), 1400);
   }
@@ -172,12 +159,10 @@
     if (!filterBar) return;
     const seen = new Set(), cats = [];
     photos.forEach(p => { if (!seen.has(p.category)) { seen.add(p.category); cats.push(p.category); } });
-    if (cats.length <= 1) { filterBar.style.display = 'none'; return; }
+    if (cats.length <= 1) { filterBar.style.display = 'none'; filterAndRender(cats[0] || 'all'); return; }
     filterBar.innerHTML = '';
-    // Show only category buttons — no "All" button
     cats.forEach((cat, i) => filterBar.appendChild(makeFilterBtn(cat.charAt(0).toUpperCase() + cat.slice(1).replace(/[-_]/g, ' '), cat, i === 0)));
     filterBar.style.display = 'flex';
-    // Default to first category
     filterAndRender(cats[0]);
   }
 
@@ -199,19 +184,9 @@
   function applySortOrder(photos) {
     const sorted = [...photos];
     if (sortOrder === 'newest') {
-      sorted.sort((a, b) => {
-        if (!a.date && !b.date) return 0;
-        if (!a.date) return 1;
-        if (!b.date) return -1;
-        return b.date - a.date;
-      });
+      sorted.sort((a, b) => { if (!a.date && !b.date) return 0; if (!a.date) return 1; if (!b.date) return -1; return b.date - a.date; });
     } else if (sortOrder === 'oldest') {
-      sorted.sort((a, b) => {
-        if (!a.date && !b.date) return 0;
-        if (!a.date) return 1;
-        if (!b.date) return -1;
-        return a.date - b.date;
-      });
+      sorted.sort((a, b) => { if (!a.date && !b.date) return 0; if (!a.date) return 1; if (!b.date) return -1; return a.date - b.date; });
     }
     return sorted;
   }
@@ -219,43 +194,27 @@
   async function readExifDatesInBackground() {
     if (!window.exifr) return;
     if (sortLoading) sortLoading.classList.add('visible');
-
     await Promise.allSettled(allPhotos.map(async photo => {
       try {
         const data = await window.exifr.parse(photo.url, ['DateTimeOriginal', 'CreateDate']);
         const raw  = data && (data.DateTimeOriginal || data.CreateDate);
         if (raw) photo.date = raw instanceof Date ? raw : new Date(raw);
-      } catch (e) {
-        // No EXIF date — photo stays at default position
-      }
+      } catch (e) {}
     }));
-
     datesLoaded = true;
     if (sortLoading) sortLoading.classList.remove('visible');
-
-    // Re-render with dates if a date sort is active
     if (sortOrder !== 'default') reRender();
   }
 
   function reRender() {
-    const base = currentCategory === 'all' || !currentCategory
-      ? allPhotos
-      : allPhotos.filter(p => p.category === currentCategory);
+    const base = currentCategory === 'all' || !currentCategory ? allPhotos : allPhotos.filter(p => p.category === currentCategory);
     filteredPhotos = applySortOrder(base);
-    carouselIndex = 0;
-    buildCarousel(filteredPhotos);
+    focusedIndex = 0;
+    buildStrip(filteredPhotos);
   }
 
-  // Sort dropdown handler
   if (sortSelect) {
-    sortSelect.addEventListener('change', () => {
-      sortOrder = sortSelect.value;
-      if ((sortOrder === 'newest' || sortOrder === 'oldest') && !datesLoaded) {
-        if (sortLoading) sortLoading.textContent = 'Reading dates…';
-        if (sortLoading) sortLoading.classList.add('visible');
-      }
-      reRender();
-    });
+    sortSelect.addEventListener('change', () => { sortOrder = sortSelect.value; reRender(); });
     sortSelect.addEventListener('mouseenter', () => setCursorHover(true));
     sortSelect.addEventListener('mouseleave', () => setCursorHover(false));
   }
@@ -263,91 +222,161 @@
   // ---- Filter & Render ----
   function filterAndRender(category) {
     currentCategory = category;
-    const base = category === 'all' ? allPhotos : allPhotos.filter(p => p.category === category);
+    const base = !category || category === 'all' ? allPhotos : allPhotos.filter(p => p.category === category);
     filteredPhotos = applySortOrder(base);
     countEl.textContent = filteredPhotos.length + ' image' + (filteredPhotos.length !== 1 ? 's' : '');
-    carouselIndex = 0;
-    buildCarousel(filteredPhotos);
+    focusedIndex = 0;
+    buildStrip(filteredPhotos);
   }
 
-  // ---- Carousel ----
-  function buildCarousel(photos) {
-    if (!carouselStage) return;
-    carouselStage.innerHTML = '';
-    if (carouselThumbs) carouselThumbs.innerHTML = '';
+  // ---- Scrolling Strip ----
+  function buildStrip(photos) {
+    if (!carouselStrip) return;
+    carouselStrip.innerHTML = '';
 
     photos.forEach((photo, i) => {
-      // Slide
-      const slide = document.createElement('div');
-      slide.className = 'carousel-slide' + (i === 0 ? ' active' : '');
+      const item = document.createElement('div');
+      item.className = 'strip-item' + (i === 0 ? ' focused' : '');
+
       const img = document.createElement('img');
       img.src = photo.url;
       img.alt = photo.name;
-      img.loading = i === 0 ? 'eager' : 'lazy';
-      slide.appendChild(img);
-      carouselStage.appendChild(slide);
+      img.loading = i < 4 ? 'eager' : 'lazy';
 
-      // Thumbnail
-      if (carouselThumbs) {
-        const thumb = document.createElement('img');
-        thumb.className = 'carousel-thumb' + (i === 0 ? ' active' : '');
-        thumb.src = photo.url;
-        thumb.alt = photo.name;
-        thumb.loading = 'lazy';
-        thumb.addEventListener('click', () => goToSlide(i));
-        thumb.addEventListener('mouseenter', () => setCursorHover(true));
-        thumb.addEventListener('mouseleave', () => setCursorHover(false));
-        carouselThumbs.appendChild(thumb);
-      }
+      // Set natural width once loaded so strip items size correctly
+      img.addEventListener('load', () => {
+        const ratio = img.naturalWidth / img.naturalHeight;
+        item.style.width = Math.round(340 * ratio) + 'px';
+      });
+
+      // Expand icon overlay (only shows on focused item hover)
+      const overlay = document.createElement('div');
+      overlay.className = 'strip-item-overlay';
+      overlay.innerHTML = '<div class="strip-expand-icon">&#x26F6;</div>';
+
+      item.appendChild(img);
+      item.appendChild(overlay);
+
+      // Click: if not focused, focus it; if already focused, open fullscreen
+      item.addEventListener('click', () => {
+        if (!item.classList.contains('focused')) {
+          setFocus(i);
+        } else {
+          openFullscreen(i);
+        }
+      });
+
+      item.addEventListener('mouseenter', () => setCursorHover(true));
+      item.addEventListener('mouseleave', () => setCursorHover(false));
+
+      carouselStrip.appendChild(item);
     });
 
     updateCaption();
+    setupDragScroll();
   }
 
-  function goToSlide(index) {
-    const slides = carouselStage.querySelectorAll('.carousel-slide');
-    const thumbs = carouselThumbs ? carouselThumbs.querySelectorAll('.carousel-thumb') : [];
-    if (!slides.length) return;
-
-    slides[carouselIndex].classList.remove('active');
-    if (thumbs[carouselIndex]) thumbs[carouselIndex].classList.remove('active');
-
-    carouselIndex = ((index % filteredPhotos.length) + filteredPhotos.length) % filteredPhotos.length;
-
-    slides[carouselIndex].classList.add('active');
-    if (thumbs[carouselIndex]) {
-      thumbs[carouselIndex].classList.add('active');
-      thumbs[carouselIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    }
+  function setFocus(index) {
+    const items = carouselStrip.querySelectorAll('.strip-item');
+    if (!items.length) return;
+    items[focusedIndex].classList.remove('focused');
+    focusedIndex = index;
+    items[focusedIndex].classList.add('focused');
     updateCaption();
+    // Smooth scroll the focused item toward center
+    const item = items[focusedIndex];
+    const strip = carouselStrip;
+    const itemCenter = item.offsetLeft + item.offsetWidth / 2;
+    const stripCenter = strip.clientWidth / 2;
+    strip.scrollTo({ left: itemCenter - stripCenter, behavior: 'smooth' });
   }
 
   function updateCaption() {
     if (!filteredPhotos.length) return;
-    const p = filteredPhotos[carouselIndex];
+    const p = filteredPhotos[focusedIndex];
     if (carouselName) carouselName.textContent = p.name;
     if (carouselCat)  carouselCat.textContent  = p.category !== 'uncategorised' ? p.category.replace(/[-_]/g, ' ') : '';
-    if (carouselCtr)  carouselCtr.textContent  = (carouselIndex + 1) + ' / ' + filteredPhotos.length;
+    if (carouselCtr)  carouselCtr.textContent  = (focusedIndex + 1) + ' / ' + filteredPhotos.length;
   }
 
-  if (carouselPrev) carouselPrev.addEventListener('click', () => goToSlide(carouselIndex - 1));
-  if (carouselNext) carouselNext.addEventListener('click', () => goToSlide(carouselIndex + 1));
+  // ---- Drag to scroll ----
+  function setupDragScroll() {
+    if (!carouselStrip) return;
+    let isDragging = false, startX = 0, scrollLeft = 0;
 
-  // Keyboard
-  document.addEventListener('keydown', e => {
-    if (e.key === 'ArrowLeft')  goToSlide(carouselIndex - 1);
-    if (e.key === 'ArrowRight') goToSlide(carouselIndex + 1);
-  });
-
-  // Touch swipe
-  let touchStartX = 0;
-  if (carouselStage) {
-    carouselStage.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
-    carouselStage.addEventListener('touchend', e => {
-      const diff = touchStartX - e.changedTouches[0].clientX;
-      if (Math.abs(diff) > 40) goToSlide(diff > 0 ? carouselIndex + 1 : carouselIndex - 1);
+    carouselStrip.addEventListener('mousedown', e => {
+      isDragging = true; startX = e.pageX - carouselStrip.offsetLeft; scrollLeft = carouselStrip.scrollLeft;
+      carouselStrip.style.cursor = 'grabbing';
+    });
+    document.addEventListener('mouseup', () => { isDragging = false; carouselStrip.style.cursor = 'grab'; });
+    carouselStrip.addEventListener('mousemove', e => {
+      if (!isDragging) return;
+      e.preventDefault();
+      const x = e.pageX - carouselStrip.offsetLeft;
+      carouselStrip.scrollLeft = scrollLeft - (x - startX);
     });
   }
+
+  // ---- Keyboard nav for strip ----
+  document.addEventListener('keydown', e => {
+    if (fsViewer && fsViewer.classList.contains('open')) {
+      if (e.key === 'Escape')      closeFullscreen();
+      if (e.key === 'ArrowLeft')   fsGoTo(fsIndex - 1);
+      if (e.key === 'ArrowRight')  fsGoTo(fsIndex + 1);
+      return;
+    }
+    if (e.key === 'ArrowLeft')  setFocus(Math.max(0, focusedIndex - 1));
+    if (e.key === 'ArrowRight') setFocus(Math.min(filteredPhotos.length - 1, focusedIndex + 1));
+    if (e.key === 'Enter')      openFullscreen(focusedIndex);
+  });
+
+  // ---- Fullscreen Viewer ----
+  function openFullscreen(index) {
+    fsIndex = index;
+    updateFs();
+    fsViewer.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeFullscreen() {
+    fsViewer.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function fsGoTo(index) {
+    fsIndex = ((index % filteredPhotos.length) + filteredPhotos.length) % filteredPhotos.length;
+    updateFs();
+    // Keep strip in sync
+    setFocus(fsIndex);
+  }
+
+  function updateFs() {
+    const p = filteredPhotos[fsIndex];
+    fsImg.src = p.url;
+    fsImg.alt = p.name;
+    if (fsCtr) fsCtr.textContent = (fsIndex + 1) + ' / ' + filteredPhotos.length;
+  }
+
+  if (fsClose) fsClose.addEventListener('click', closeFullscreen);
+  if (fsPrev)  fsPrev.addEventListener('click',  () => fsGoTo(fsIndex - 1));
+  if (fsNext)  fsNext.addEventListener('click',  () => fsGoTo(fsIndex + 1));
+
+  if (fsViewer) {
+    fsViewer.addEventListener('click', e => { if (e.target === fsViewer) closeFullscreen(); });
+    // Touch swipe in fullscreen
+    let fsTouchX = 0;
+    fsViewer.addEventListener('touchstart', e => { fsTouchX = e.touches[0].clientX; }, { passive: true });
+    fsViewer.addEventListener('touchend', e => {
+      const diff = fsTouchX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 40) fsGoTo(diff > 0 ? fsIndex + 1 : fsIndex - 1);
+    });
+  }
+
+  [fsClose, fsPrev, fsNext].forEach(el => {
+    if (!el) return;
+    el.addEventListener('mouseenter', () => setCursorHover(true));
+    el.addEventListener('mouseleave', () => setCursorHover(false));
+  });
 
   // ---- States ----
   function showEmpty() {
@@ -357,7 +386,7 @@
   }
   function showError(msg) {
     if (carouselWrap) carouselWrap.style.display = 'none';
-    if (grid) { grid.style.display = 'block'; grid.innerHTML = '<div class="error-state"><p>Could not load photos.</p><p style="margin-top:8px;font-size:11px">' + msg + '</p><p style="margin-top:16px">Make sure your R2 bucket is <strong>public</strong> and the URL in <code>config.js</code> is correct.</p></div>'; }
+    if (grid) { grid.style.display = 'block'; grid.innerHTML = '<div class="error-state"><p>Could not load photos.</p><p style="margin-top:8px;font-size:11px">' + msg + '</p></div>'; }
     countEl.textContent = '—';
   }
   function showConfigBanner() {
