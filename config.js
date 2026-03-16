@@ -8,7 +8,7 @@ window.PORTFOLIO_CONFIG = {
   // Your R2 public bucket URL (no trailing slash)
   // Example: "https://pub-abc123.r2.dev" or "https://photos.yourdomain.com"
   // Leave as empty string "" until you've set up R2
-  R2_BUCKET_URL: "https://photos.marcgreenbergphoto.com",
+  R2_BUCKET_URL: "https://pub-6c92cdd67a854ed7aef02bdc1aa2fd14.r2.dev",
 
   // Hero slideshow folder — the name of the R2 folder containing your hero photos
   // Create a folder in R2 (e.g. "hero"), upload your best 10 shots into it,
