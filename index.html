@@ -33,6 +33,22 @@
       cursor: none;
     }
 
+    /* Image protection — disable selection and drag */
+    img {
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
+    }
+
+    /* Re-enable pointer events on interactive elements that contain images */
+    .gallery-item,
+    .carousel-slide,
+    .carousel-thumb,
+    .hero-right {
+      pointer-events: auto;
+    }
+
     /* Custom cursor */
     .cursor {
       position: fixed;
@@ -258,11 +274,63 @@
     .section-header {
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
+      align-items: center;
       margin-bottom: 48px;
       padding-bottom: 20px;
       border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 12px;
     }
+
+    .section-header-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .sort-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sort-label {
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .sort-select {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 10px;
+      font-weight: 300;
+      letter-spacing: 0.12em;
+      padding: 6px 10px;
+      cursor: none;
+      transition: border-color 0.3s, color 0.3s;
+      appearance: none;
+      -webkit-appearance: none;
+      padding-right: 24px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b6560'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+    }
+
+    .sort-select:focus { outline: none; border-color: var(--accent); color: var(--text); }
+    .sort-select option { background: #1a1a1a; color: var(--text); }
+
+    .sort-loading {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .sort-loading.visible { opacity: 1; }
 
     .section-title {
       font-family: 'Cormorant Garamond', serif;
@@ -279,7 +347,133 @@
       letter-spacing: 0.1em;
     }
 
-    /* Fixed-height flex row gallery — natural aspect ratios, no cropping */
+    /* ---- Carousel View ---- */
+    .carousel-wrap {
+      position: relative;
+      width: 100%;
+      background: var(--bg2);
+    }
+
+    .carousel-stage {
+      position: relative;
+      width: 100%;
+      height: 75vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .carousel-slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+      pointer-events: none;
+    }
+
+    .carousel-slide.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .carousel-slide img {
+      max-width: 100%;
+      max-height: 75vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      filter: brightness(0.95);
+      transition: filter 0.3s;
+    }
+
+    .carousel-slide.active img { filter: brightness(1); }
+
+    /* Carousel nav arrows */
+    .carousel-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      background: rgba(10,10,10,0.6);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      width: 48px; height: 48px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      cursor: none;
+      transition: border-color 0.3s, color 0.3s, background 0.3s;
+      backdrop-filter: blur(4px);
+    }
+    .carousel-arrow:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(10,10,10,0.85);
+    }
+    .carousel-arrow-prev { left: 20px; }
+    .carousel-arrow-next { right: 20px; }
+
+    /* Carousel caption */
+    .carousel-caption {
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border);
+    }
+
+    .carousel-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 17px;
+      font-style: italic;
+      color: var(--text);
+    }
+
+    .carousel-category {
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .carousel-counter {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+
+    /* Thumbnail strip */
+    .carousel-thumbs {
+      display: flex;
+      gap: 6px;
+      padding: 12px 0 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .carousel-thumbs::-webkit-scrollbar { display: none; }
+
+    .carousel-thumb {
+      flex-shrink: 0;
+      height: 56px;
+      width: auto;
+      cursor: none;
+      opacity: 0.4;
+      transition: opacity 0.3s;
+      border: 1px solid transparent;
+      object-fit: contain;
+      background: var(--bg2);
+    }
+    .carousel-thumb.active {
+      opacity: 1;
+      border-color: var(--accent);
+    }
+    .carousel-thumb:hover { opacity: 0.75; }
+
+    /* ---- Grid View (kept for reference/future) ---- */
     .gallery-grid {
       display: flex;
       flex-wrap: wrap;
@@ -298,7 +492,6 @@
       cursor: none;
       flex-shrink: 0;
       flex-grow: 0;
-      /* flex-basis set by JS from natural aspect ratio */
     }
 
     .gallery-item.visible { opacity: 1; transform: translateY(0); }
@@ -313,13 +506,7 @@
       filter: brightness(0.92) saturate(0.9);
     }
 
-    .gallery-item:hover img {
-      filter: brightness(1) saturate(1.05);
-    }
-
-    @media (max-width: 600px) {
-      .gallery-item { height: 200px; }
-    }
+    .gallery-item:hover img { filter: brightness(1) saturate(1.05); }
 
     .gallery-item-overlay {
       position: absolute;
@@ -592,7 +779,7 @@
   <header>
     <a class="logo" href="#"><span>A</span>rchive</a>
     <nav>
-      <a href="#gallery" class="active">Work</a>
+      <a href="#gallery" class="active">Galleries</a>
       <a href="#about">About</a>
       <a href="#contact">Contact</a>
     </nav>
@@ -621,7 +808,18 @@
   <section class="gallery-section" id="gallery">
     <div class="section-header">
       <span class="section-title">Selected Works</span>
-      <span class="photo-count" id="photoCount">—</span>
+      <div class="section-header-right">
+        <span class="sort-loading" id="sortLoading">Reading dates…</span>
+        <div class="sort-wrap">
+          <span class="sort-label">Sort</span>
+          <select class="sort-select" id="sortSelect">
+            <option value="default">Default</option>
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+        </div>
+        <span class="photo-count" id="photoCount">—</span>
+      </div>
     </div>
 
     <div id="filterBar" class="filter-bar" style="display:none"></div>
@@ -629,12 +827,30 @@
     <div id="configBanner" class="config-banner" style="display:none">
       <div>
         <strong>Setup Required</strong>
-        Open <code>config.js</code> and set your Cloudflare R2 public bucket URL to display your photos. 
+        Open <code>config.js</code> and set your Cloudflare R2 public bucket URL to display your photos.
         See <code>SETUP.md</code> for step-by-step instructions.
       </div>
     </div>
 
-    <div id="galleryGrid" class="gallery-grid"></div>
+    <!-- Carousel View (default) -->
+    <div id="carouselWrap" class="carousel-wrap">
+      <div class="carousel-stage" id="carouselStage">
+        <!-- slides injected by JS -->
+      </div>
+      <button class="carousel-arrow carousel-arrow-prev" id="carouselPrev">&#8249;</button>
+      <button class="carousel-arrow carousel-arrow-next" id="carouselNext">&#8250;</button>
+      <div class="carousel-caption">
+        <div>
+          <div class="carousel-category" id="carouselCategory"></div>
+          <div class="carousel-name" id="carouselName"></div>
+        </div>
+        <span class="carousel-counter" id="carouselCounter"></span>
+      </div>
+      <div class="carousel-thumbs" id="carouselThumbs"></div>
+    </div>
+
+    <!-- Grid View (hidden by default) -->
+    <div id="galleryGrid" class="gallery-grid" style="display:none"></div>
   </section>
 
   <footer>
@@ -654,7 +870,33 @@
     <div class="lightbox-category" id="lightboxCategory"></div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/exifr/dist/lite.umd.js"></script>
   <script src="config.js"></script>
   <script src="gallery.js"></script>
+  <script>
+    // ---- Image Protection ----
+    // Disable right-click context menu on images
+    document.addEventListener('contextmenu', function(e) {
+      if (e.target.tagName === 'IMG') {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    // Disable drag on images
+    document.addEventListener('dragstart', function(e) {
+      if (e.target.tagName === 'IMG') {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    // Block common save shortcuts (Ctrl+S, Ctrl+U, Ctrl+Shift+I)
+    document.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+      }
+    });
+  </script>
 </body>
 </html>
