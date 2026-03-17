@@ -249,7 +249,7 @@
         item.style.width = Math.round(340 * ratio) + 'px';
       });
 
-      // Expand icon overlay (only shows on focused item hover)
+      // Expand icon overlay — shows on hover of focused item
       const overlay = document.createElement('div');
       overlay.className = 'strip-item-overlay';
       overlay.innerHTML = '<div class="strip-expand-icon">&#x26F6;</div>';
@@ -257,14 +257,8 @@
       item.appendChild(img);
       item.appendChild(overlay);
 
-      // Click: if not focused, focus it; if already focused, open fullscreen
-      item.addEventListener('click', () => {
-        if (!item.classList.contains('focused')) {
-          setFocus(i);
-        } else {
-          openFullscreen(i);
-        }
-      });
+      // Click always opens fullscreen (focus is handled by scroll position)
+      item.addEventListener('click', () => openFullscreen(i));
 
       item.addEventListener('mouseenter', () => setCursorHover(true));
       item.addEventListener('mouseleave', () => setCursorHover(false));
@@ -274,21 +268,48 @@
 
     updateCaption();
     setupDragScroll();
+    setupScrollFocus();
   }
 
   function setFocus(index) {
     const items = carouselStrip.querySelectorAll('.strip-item');
     if (!items.length) return;
+    if (focusedIndex === index) return; // already focused
     items[focusedIndex].classList.remove('focused');
     focusedIndex = index;
     items[focusedIndex].classList.add('focused');
     updateCaption();
-    // Smooth scroll the focused item toward center
+  }
+
+  function scrollToFocused(behavior) {
+    const items = carouselStrip.querySelectorAll('.strip-item');
+    if (!items.length) return;
     const item = items[focusedIndex];
-    const strip = carouselStrip;
-    const itemCenter = item.offsetLeft + item.offsetWidth / 2;
-    const stripCenter = strip.clientWidth / 2;
-    strip.scrollTo({ left: itemCenter - stripCenter, behavior: 'smooth' });
+    const stripCenter = carouselStrip.clientWidth / 2;
+    const itemCenter  = item.offsetLeft + item.offsetWidth / 2;
+    carouselStrip.scrollTo({ left: itemCenter - stripCenter, behavior: behavior || 'smooth' });
+  }
+
+  // Auto-focus the item closest to the strip center while scrolling
+  function setupScrollFocus() {
+    if (!carouselStrip) return;
+    let scrollTimer = null;
+
+    carouselStrip.addEventListener('scroll', () => {
+      // Debounce — run focus detection shortly after scrolling stops
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        const stripCenter = carouselStrip.scrollLeft + carouselStrip.clientWidth / 2;
+        const items = Array.from(carouselStrip.querySelectorAll('.strip-item'));
+        let closest = 0, minDist = Infinity;
+        items.forEach((item, i) => {
+          const itemCenter = item.offsetLeft + item.offsetWidth / 2;
+          const dist = Math.abs(itemCenter - stripCenter);
+          if (dist < minDist) { minDist = dist; closest = i; }
+        });
+        setFocus(closest);
+      }, 80);
+    }, { passive: true });
   }
 
   function updateCaption() {
@@ -325,9 +346,15 @@
       if (e.key === 'ArrowRight')  fsGoTo(fsIndex + 1);
       return;
     }
-    if (e.key === 'ArrowLeft')  setFocus(Math.max(0, focusedIndex - 1));
-    if (e.key === 'ArrowRight') setFocus(Math.min(filteredPhotos.length - 1, focusedIndex + 1));
-    if (e.key === 'Enter')      openFullscreen(focusedIndex);
+    if (e.key === 'ArrowLeft' && focusedIndex > 0) {
+      setFocus(focusedIndex - 1);
+      scrollToFocused('smooth');
+    }
+    if (e.key === 'ArrowRight' && focusedIndex < filteredPhotos.length - 1) {
+      setFocus(focusedIndex + 1);
+      scrollToFocused('smooth');
+    }
+    if (e.key === 'Enter') openFullscreen(focusedIndex);
   });
 
   // ---- Fullscreen Viewer ----
