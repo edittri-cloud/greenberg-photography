@@ -308,7 +308,7 @@
           if (dist < minDist) { minDist = dist; closest = i; }
         });
         setFocus(closest);
-      }, 80);
+      }, 20);
     }, { passive: true });
   }
 
