@@ -30,7 +30,6 @@
       font-size: 13px;
       letter-spacing: 0.04em;
       min-height: 100vh;
-      cursor: none;
     }
 
     /* Image protection — disable selection and drag */
@@ -49,29 +48,7 @@
       pointer-events: auto;
     }
 
-    /* Custom cursor */
-    .cursor {
-      position: fixed;
-      width: 8px; height: 8px;
-      background: var(--accent);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9999;
-      transform: translate(-50%, -50%);
-      transition: transform 0.1s, width 0.3s, height 0.3s, opacity 0.3s;
-    }
-    .cursor-ring {
-      position: fixed;
-      width: 36px; height: 36px;
-      border: 1px solid rgba(201,169,110,0.4);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9998;
-      transform: translate(-50%, -50%);
-      transition: transform 0.15s ease-out, width 0.3s, height 0.3s;
-    }
-    .cursor.hover { width: 14px; height: 14px; }
-    .cursor-ring.hover { width: 52px; height: 52px; border-color: rgba(201,169,110,0.7); }
+
 
     /* Header */
     header {
@@ -122,13 +99,27 @@
       padding: 48px 48px 56px;
       position: relative;
       z-index: 1;
+      min-width: 0; /* prevent overflow */
     }
 
     .hero-right {
       position: relative;
       overflow: hidden;
-      /* Height matches whatever the left column needs */
       min-height: 320px;
+      max-width: 100%; /* never exceed its grid cell */
+    }
+
+    @media (max-width: 1024px) {
+      /* Tablet — narrower photo panel */
+      .hero { grid-template-columns: 1fr 1fr; }
+      .hero-left { padding: 40px 32px 48px; }
+    }
+
+    @media (max-width: 680px) {
+      /* Phone — stack, photo panel becomes a short banner below text */
+      .hero { grid-template-columns: 1fr; grid-template-rows: auto 240px; }
+      .hero-right { min-height: 240px; }
+      .hero-left { padding: 40px 24px 32px; }
     }
 
     /* Hero dissolve slideshow — full image, no cropping */
@@ -180,7 +171,6 @@
       border-radius: 50%;
       background: rgba(232,224,213,0.3);
       border: none;
-      cursor: none;
       transition: background 0.4s, transform 0.4s;
       padding: 0;
     }
@@ -260,11 +250,7 @@
       animation: scrollPulse 2s 1.5s infinite;
     }
 
-    @media (max-width: 768px) {
-      .hero { grid-template-columns: 1fr; }
-      .hero-right { display: none; }
-      .hero-left { padding: 0 24px 48px; }
-    }
+
 
         /* Gallery Section */
     .gallery-section {
@@ -310,7 +296,6 @@
       font-weight: 300;
       letter-spacing: 0.12em;
       padding: 6px 10px;
-      cursor: none;
       transition: border-color 0.3s, color 0.3s;
       appearance: none;
       -webkit-appearance: none;
@@ -363,11 +348,18 @@
       overflow-y: visible;
       scroll-behavior: smooth;
       scrollbar-width: none;
-      padding: 40px 48px;
+      /* horizontal padding set by JS so first/last items can center */
+      padding: 40px 0;
       cursor: grab;
     }
     .carousel-strip:active { cursor: grabbing; }
     .carousel-strip::-webkit-scrollbar { display: none; }
+
+    /* Spacer elements injected at each end of the strip */
+    .strip-spacer {
+      flex-shrink: 0;
+      height: 1px;
+    }
 
     /* Each image card in the strip */
     .strip-item {
@@ -379,7 +371,6 @@
                   opacity 0.18s ease;
       opacity: 0.55;
       transform: scale(0.88);
-      cursor: none;
     }
 
     .strip-item.focused {
@@ -403,28 +394,12 @@
 
     .strip-item.focused img { filter: brightness(1); }
 
-    /* Click hint overlay on focused item */
-    .strip-item-overlay {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      transition: opacity 0.3s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    /* Zoom cursor on focused item — signals click opens fullscreen */
+    .strip-item.focused {
+      cursor: zoom-in;
     }
 
-    .strip-item.focused:hover .strip-item-overlay { opacity: 1; }
-
-    .strip-expand-icon {
-      width: 44px; height: 44px;
-      border: 1px solid rgba(232,224,213,0.6);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
-      color: var(--text);
-      background: rgba(0,0,0,0.4);
-      backdrop-filter: blur(4px);
-    }
+    .strip-item-overlay { display: none; }
 
     /* Caption below strip */
     .carousel-caption {
@@ -495,7 +470,6 @@
       font-size: 11px;
       letter-spacing: 0.2em;
       text-transform: uppercase;
-      cursor: none;
       transition: color 0.3s;
       z-index: 10;
     }
@@ -511,7 +485,6 @@
       width: 52px; height: 52px;
       display: flex; align-items: center; justify-content: center;
       font-size: 22px;
-      cursor: none;
       transition: border-color 0.3s, color 0.3s;
       z-index: 10;
     }
@@ -545,7 +518,6 @@
       opacity: 0;
       transform: translateY(16px);
       transition: opacity 0.6s, transform 0.6s;
-      cursor: none;
       flex-shrink: 0;
       flex-grow: 0;
     }
@@ -674,7 +646,6 @@
       font-size: 11px;
       letter-spacing: 0.2em;
       text-transform: uppercase;
-      cursor: none;
       transition: color 0.3s;
       background: none;
       border: none;
@@ -690,7 +661,6 @@
       color: var(--muted);
       width: 44px; height: 44px;
       display: flex; align-items: center; justify-content: center;
-      cursor: none;
       transition: border-color 0.3s, color 0.3s;
       font-size: 18px;
     }
@@ -726,7 +696,6 @@
       font-weight: 300;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      cursor: none;
       transition: border-color 0.3s, color 0.3s, background 0.3s;
     }
 
@@ -828,9 +797,6 @@
   </style>
 </head>
 <body>
-
-  <div class="cursor" id="cursor"></div>
-  <div class="cursor-ring" id="cursorRing"></div>
 
   <header>
     <a class="logo" href="#"><span>A</span>rchive</a>

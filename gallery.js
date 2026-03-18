@@ -56,20 +56,8 @@
     if (cfg.HERO_DESC) { const el = document.querySelector('.hero-desc'); if (el) el.textContent = cfg.HERO_DESC; }
   }
 
-  // ---- Cursor ----
-  let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
-  document.addEventListener('mousemove', e => {
-    mouseX = e.clientX; mouseY = e.clientY;
-    cursor.style.left = mouseX + 'px'; cursor.style.top = mouseY + 'px';
-  });
-  (function animateRing() {
-    ringX += (mouseX - ringX) * 0.12; ringY += (mouseY - ringY) * 0.12;
-    cursorRing.style.left = ringX + 'px'; cursorRing.style.top = ringY + 'px';
-    requestAnimationFrame(animateRing);
-  })();
-  function setCursorHover(on) {
-    cursor.classList.toggle('hover', on); cursorRing.classList.toggle('hover', on);
-  }
+  // ---- Cursor hover (uses default system cursor) ----
+  function setCursorHover(on) { /* no custom cursor */ }
 
   // ---- Data ----
   let allPhotos      = [];
@@ -249,13 +237,7 @@
         item.style.width = Math.round(340 * ratio) + 'px';
       });
 
-      // Expand icon overlay — shows on hover of focused item
-      const overlay = document.createElement('div');
-      overlay.className = 'strip-item-overlay';
-      overlay.innerHTML = '<div class="strip-expand-icon">&#x26F6;</div>';
-
       item.appendChild(img);
-      item.appendChild(overlay);
 
       // Click always opens fullscreen (focus is handled by scroll position)
       item.addEventListener('click', () => openFullscreen(i));
@@ -266,9 +248,26 @@
       carouselStrip.appendChild(item);
     });
 
+    // Add spacers at each end so first and last items can scroll to center
+    const stripWidth = carouselStrip.clientWidth || window.innerWidth;
+    const spacerSize = Math.floor(stripWidth / 2) + 'px';
+
+    const spacerStart = document.createElement('div');
+    spacerStart.className = 'strip-spacer';
+    spacerStart.style.width = spacerSize;
+    carouselStrip.insertBefore(spacerStart, carouselStrip.firstChild);
+
+    const spacerEnd = document.createElement('div');
+    spacerEnd.className = 'strip-spacer';
+    spacerEnd.style.width = spacerSize;
+    carouselStrip.appendChild(spacerEnd);
+
     updateCaption();
     setupDragScroll();
     setupScrollFocus();
+
+    // Scroll first item into center on load (instant, no animation)
+    requestAnimationFrame(() => scrollToFocused('instant'));
   }
 
   function setFocus(index) {
@@ -285,9 +284,9 @@
     const items = carouselStrip.querySelectorAll('.strip-item');
     if (!items.length) return;
     const item = items[focusedIndex];
-    const stripCenter = carouselStrip.clientWidth / 2;
-    const itemCenter  = item.offsetLeft + item.offsetWidth / 2;
-    carouselStrip.scrollTo({ left: itemCenter - stripCenter, behavior: behavior || 'smooth' });
+    // offsetLeft is relative to strip including the leading spacer
+    const itemCenter = item.offsetLeft + item.offsetWidth / 2;
+    carouselStrip.scrollTo({ left: itemCenter - carouselStrip.clientWidth / 2, behavior: behavior || 'smooth' });
   }
 
   // Auto-focus the item closest to the strip center while scrolling
@@ -307,6 +306,7 @@
           const dist = Math.abs(itemCenter - stripCenter);
           if (dist < minDist) { minDist = dist; closest = i; }
         });
+        // stripCenter here includes scroll offset
         setFocus(closest);
       }, 20);
     }, { passive: true });
