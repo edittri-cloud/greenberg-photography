@@ -180,6 +180,10 @@
   }
 
   async function readExifDatesInBackground() {
+    // Wait briefly for exifr to load if it hasn't yet (both scripts are deferred)
+    if (!window.exifr) {
+      await new Promise(resolve => setTimeout(resolve, 800));
+    }
     if (!window.exifr) return;
     if (sortLoading) sortLoading.classList.add('visible');
     await Promise.allSettled(allPhotos.map(async photo => {
@@ -422,6 +426,7 @@
     countEl.textContent = '—';
   }
 
+  // Scripts are deferred — DOM is guaranteed ready, just init
   init();
 
 })();

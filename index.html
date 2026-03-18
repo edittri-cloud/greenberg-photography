@@ -87,10 +87,12 @@
     .hero {
       display: grid;
       grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr;
       position: relative;
       overflow: hidden;
       padding-top: 88px; /* clears fixed header */
-      min-height: 520px; /* prevents collapse on desktop */
+      min-height: 520px;
+      height: auto;
     }
 
     .hero-left {
@@ -106,8 +108,9 @@
     .hero-right {
       position: relative;
       overflow: hidden;
-      min-height: 320px;
-      max-width: 100%; /* never exceed its grid cell */
+      min-height: 400px;
+      height: 100%;
+      max-width: 100%;
     }
 
     @media (max-width: 1024px) {
@@ -875,9 +878,9 @@
     <div class="lightbox-category" id="lightboxCategory"></div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/exifr/dist/full.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exifr/dist/full.umd.js" defer></script>
   <script src="config.js"></script>
-  <script src="gallery.js"></script>
+  <script src="gallery.js" defer></script>
   <script>
     // ---- Image Protection ----
     // Disable right-click context menu on images
