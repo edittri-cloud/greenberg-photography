@@ -293,26 +293,27 @@
     carouselStrip.scrollTo({ left: itemCenter - carouselStrip.clientWidth / 2, behavior: behavior || 'smooth' });
   }
 
-  // Auto-focus the item closest to the strip center while scrolling
+  // Auto-focus the item closest to the strip center — runs every animation frame
+  // while scrolling so the magnify/brighten effect is continuous and immediate
   function setupScrollFocus() {
     if (!carouselStrip) return;
-    let scrollTimer = null;
+    let rafId = null;
+
+    function findAndSetFocus() {
+      const stripCenter = carouselStrip.scrollLeft + carouselStrip.clientWidth / 2;
+      const items = Array.from(carouselStrip.querySelectorAll('.strip-item'));
+      let closest = 0, minDist = Infinity;
+      items.forEach((item, i) => {
+        const itemCenter = item.offsetLeft + item.offsetWidth / 2;
+        const dist = Math.abs(itemCenter - stripCenter);
+        if (dist < minDist) { minDist = dist; closest = i; }
+      });
+      setFocus(closest);
+      rafId = null;
+    }
 
     carouselStrip.addEventListener('scroll', () => {
-      // Debounce — run focus detection shortly after scrolling stops
-      clearTimeout(scrollTimer);
-      scrollTimer = setTimeout(() => {
-        const stripCenter = carouselStrip.scrollLeft + carouselStrip.clientWidth / 2;
-        const items = Array.from(carouselStrip.querySelectorAll('.strip-item'));
-        let closest = 0, minDist = Infinity;
-        items.forEach((item, i) => {
-          const itemCenter = item.offsetLeft + item.offsetWidth / 2;
-          const dist = Math.abs(itemCenter - stripCenter);
-          if (dist < minDist) { minDist = dist; closest = i; }
-        });
-        // stripCenter here includes scroll offset
-        setFocus(closest);
-      }, 20);
+      if (!rafId) rafId = requestAnimationFrame(findAndSetFocus);
     }, { passive: true });
   }
 
