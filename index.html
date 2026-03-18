@@ -90,6 +90,7 @@
       position: relative;
       overflow: hidden;
       padding-top: 88px; /* clears fixed header */
+      min-height: 520px; /* prevents collapse on desktop */
     }
 
     .hero-left {
@@ -117,9 +118,9 @@
 
     @media (max-width: 680px) {
       /* Phone — stack, photo panel becomes a short banner below text */
-      .hero { grid-template-columns: 1fr; grid-template-rows: auto 240px; }
-      .hero-right { min-height: 240px; }
-      .hero-left { padding: 40px 24px 32px; }
+      .hero { grid-template-columns: 1fr; grid-template-rows: auto 220px; min-height: unset; }
+      .hero-right { min-height: 220px; }
+      .hero-left { padding: 24px 20px 24px; }
     }
 
     /* Hero dissolve slideshow — full image, no cropping */
@@ -210,59 +211,32 @@
       color: var(--muted);
       line-height: 1.8;
       max-width: 340px;
-      margin-bottom: 32px;
+      margin-bottom: 0;
       opacity: 0;
       animation: fadeUp 1s 0.7s forwards;
     }
 
-    .hero-cta {
-      display: inline-block;
-      font-size: 10px;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--text);
-      text-decoration: none;
-      border-bottom: 1px solid var(--accent);
-      padding-bottom: 4px;
-      opacity: 0;
-      animation: fadeUp 1s 0.9s forwards;
-      transition: color 0.3s;
-    }
-    .hero-cta:hover { color: var(--accent); }
 
-    .scroll-hint {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      color: var(--muted);
-      font-size: 10px;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      opacity: 0;
-      animation: fadeIn 1s 1.4s forwards;
-      margin-top: 32px;
-      align-self: flex-start;
-    }
-    .scroll-line {
-      width: 1px; height: 48px;
-      background: linear-gradient(to bottom, var(--muted), transparent);
-      animation: scrollPulse 2s 1.5s infinite;
-    }
+
+    .scroll-hint { display: none; }
 
 
 
-        /* Gallery Section */
+    /* Gallery Section */
     .gallery-section {
-      padding: 80px 48px 120px;
+      padding: 32px 48px 80px;
+    }
+
+    @media (max-width: 680px) {
+      .gallery-section { padding: 20px 16px 60px; }
     }
 
     .section-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 48px;
-      padding-bottom: 20px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
       border-bottom: 1px solid var(--border);
       flex-wrap: wrap;
       gap: 12px;
@@ -349,8 +323,14 @@
       scroll-behavior: smooth;
       scrollbar-width: none;
       /* horizontal padding set by JS so first/last items can center */
-      padding: 40px 0;
+      padding: 24px 0;
       cursor: grab;
+    }
+
+    @media (max-width: 680px) {
+      .carousel-strip { padding: 16px 0; gap: 10px; }
+      .strip-item { height: 220px; }
+      .carousel-caption { padding: 4px 16px 16px; }
     }
     .carousel-strip:active { cursor: grabbing; }
     .carousel-strip::-webkit-scrollbar { display: none; }
@@ -813,11 +793,8 @@
         <p class="hero-eyebrow">Visual storytelling</p>
         <h1 class="hero-title">Light &<br><em>Shadow</em></h1>
         <p class="hero-desc">A collection of moments captured in time — where composition meets emotion and the ordinary becomes extraordinary.</p>
-        <a href="#gallery" class="hero-cta">View Work</a>
-        <div class="scroll-hint">
-          <div class="scroll-line"></div>
-          <span>Scroll</span>
-        </div>
+
+
       </div>
     </div>
     <div class="hero-right" id="heroRight">
