@@ -64,7 +64,6 @@
   let filteredPhotos = [];
   let focusedIndex   = 0;
   let currentCategory = null;
-  let sortOrder      = 'default';
   let datesLoaded    = false;
   let fsIndex        = 0;
 
@@ -168,15 +167,14 @@
     return btn;
   }
 
-  // ---- Sort ----
+  // ---- Sort — always oldest first by shoot date ----
   function applySortOrder(photos) {
-    const sorted = [...photos];
-    if (sortOrder === 'newest') {
-      sorted.sort((a, b) => { if (!a.date && !b.date) return 0; if (!a.date) return 1; if (!b.date) return -1; return b.date - a.date; });
-    } else if (sortOrder === 'oldest') {
-      sorted.sort((a, b) => { if (!a.date && !b.date) return 0; if (!a.date) return 1; if (!b.date) return -1; return a.date - b.date; });
-    }
-    return sorted;
+    return [...photos].sort((a, b) => {
+      if (!a.date && !b.date) return 0;
+      if (!a.date) return 1;  // no date goes to end
+      if (!b.date) return -1;
+      return a.date - b.date; // oldest first
+    });
   }
 
   async function readExifDatesInBackground() {
@@ -185,7 +183,6 @@
       await new Promise(resolve => setTimeout(resolve, 800));
     }
     if (!window.exifr) return;
-    if (sortLoading) sortLoading.classList.add('visible');
     await Promise.allSettled(allPhotos.map(async photo => {
       try {
         const data = await window.exifr.parse(photo.url, ['DateTimeOriginal', 'CreateDate']);
@@ -194,8 +191,7 @@
       } catch (e) {}
     }));
     datesLoaded = true;
-    if (sortLoading) sortLoading.classList.remove('visible');
-    if (sortOrder !== 'default') reRender();
+    reRender(); // re-sort by date once all dates are read
   }
 
   function reRender() {
@@ -203,12 +199,6 @@
     filteredPhotos = applySortOrder(base);
     focusedIndex = 0;
     buildStrip(filteredPhotos);
-  }
-
-  if (sortSelect) {
-    sortSelect.addEventListener('change', () => { sortOrder = sortSelect.value; reRender(); });
-    sortSelect.addEventListener('mouseenter', () => setCursorHover(true));
-    sortSelect.addEventListener('mouseleave', () => setCursorHover(false));
   }
 
   // ---- Filter & Render ----

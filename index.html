@@ -251,48 +251,7 @@
       gap: 20px;
     }
 
-    .sort-wrap {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
 
-    .sort-label {
-      font-size: 10px;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .sort-select {
-      background: none;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      font-family: 'Montserrat', sans-serif;
-      font-size: 10px;
-      font-weight: 300;
-      letter-spacing: 0.12em;
-      padding: 6px 10px;
-      transition: border-color 0.3s, color 0.3s;
-      appearance: none;
-      -webkit-appearance: none;
-      padding-right: 24px;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b6560'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 8px center;
-    }
-
-    .sort-select:focus { outline: none; border-color: var(--accent); color: var(--text); }
-    .sort-select option { background: #1a1a1a; color: var(--text); }
-
-    .sort-loading {
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      color: var(--muted);
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    .sort-loading.visible { opacity: 1; }
 
     .section-title {
       font-family: 'Cormorant Garamond', serif;
@@ -859,18 +818,7 @@
   <section class="gallery-section" id="gallery">
     <div class="section-header">
       <span class="section-title">Selected Works</span>
-      <div class="section-header-right">
-        <span class="sort-loading" id="sortLoading">Reading dates…</span>
-        <div class="sort-wrap">
-          <span class="sort-label">Sort</span>
-          <select class="sort-select" id="sortSelect">
-            <option value="default">Default</option>
-            <option value="newest">Newest first</option>
-            <option value="oldest">Oldest first</option>
-          </select>
-        </div>
-        <span class="photo-count" id="photoCount">—</span>
-      </div>
+      <span class="photo-count" id="photoCount">—</span>
     </div>
 
     <div id="filterBar" class="filter-bar" style="display:none"></div>
