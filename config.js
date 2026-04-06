@@ -24,10 +24,11 @@ window.PORTFOLIO_CONFIG = {
   SUBTITLE: "Photography Portfolio",
 
   // Hero text customisation
-  HERO_EYEBROW: "Visual storytelling",
-  HERO_TITLE_LINE1: "Light &",
-  HERO_TITLE_LINE2: "Shadow",
-  HERO_DESC: "A collection of moments captured in time — where composition meets emotion and the ordinary becomes extraordinary.",
+  HERO_EYEBROW: "Energetic Images",
+  HERO_TITLE_LINE1: "Surprising and energetic",
+  HERO_TITLE_LINE2: "glimpses at a fascinating world.",
+  HERO_DESC: "Visual stories that capture attention and imagination.
+",
 
   // Supported image file extensions (lowercase)
   SUPPORTED_EXTENSIONS: ["jpg", "jpeg", "png", "webp", "avif"],
