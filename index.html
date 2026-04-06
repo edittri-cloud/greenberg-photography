@@ -745,6 +745,55 @@
     }
 
     /* Footer */
+    /* About Section */
+    .about-section {
+      padding: 80px 48px 100px;
+      max-width: 860px;
+    }
+
+    .about-eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 48px;
+    }
+
+    .about-block {
+      margin-bottom: 64px;
+    }
+
+    .about-heading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .about-text {
+      color: #b0a89e;
+      line-height: 2;
+      font-size: 13px;
+      font-weight: 300;
+    }
+
+    .about-text p {
+      margin-bottom: 20px;
+    }
+
+    .about-text p:last-child {
+      margin-bottom: 0;
+    }
+
+    @media (max-width: 680px) {
+      .about-section { padding: 48px 20px 64px; }
+    }
+
     footer {
       border-top: 1px solid var(--border);
       padding: 32px 48px;
@@ -858,6 +907,27 @@
       <img id="fsImg" src="" alt="">
       <button class="fs-arrow fs-next" id="fsNext">&#8250;</button>
       <div class="fs-counter" id="fsCounter"></div>
+    </div>
+  </section>
+
+  <section class="about-section" id="about">
+    <p class="about-eyebrow">The photographer</p>
+
+    <div class="about-block">
+      <h2 class="about-heading">Artist Statement</h2>
+      <div class="about-text">
+        <p>For most of my life, I have kept a camera nearby. I prefer a "light and bright" set up, that allows for "of the moment" capture. Although many of my favorite photos involve classic "street photography," I dislike the term because it suggests an urban environment. I take the same approach to capturing images whether I am walking down a crowded city block, hiking an empty forest trail, or scaling a jagged mountain face.</p>
+        <p>I constantly look for the image that is immediately interesting or beautiful, but also holds a tension, a paradox, or twist within. I use uncommon, unusual, or unexpected subject matters, and seek the energetic image that automatically captures the viewer's gaze. I use bright colors, interesting viewing angles, and curving or converging image lines to hold attention, while a story in each photo begins to unfold. Every photo should come alive, tell you a short tale, and take you somewhere else, if even for a moment.</p>
+      </div>
+    </div>
+
+    <div class="about-block">
+      <h2 class="about-heading">Bio</h2>
+      <div class="about-text">
+        <p>I am a pediatric ophthalmologist by profession, but a lifelong photographer. My photos have always been shared by my family and friends, but I am now presenting my photos as public work. My photos have appeared in numerous small business social media and websites.</p>
+        <p>One photo was selected by Backroads Travel for honorable mention, published in 2021, and used again in their 2025 travel catalog. More were published in a Chicago wedding magazine in 2021. In 2024, I had three photos selected for exhibit in three separate competitions at the Atlanta Photography Group gallery, and a fourth in 2025.</p>
+        <p>My images are concentrated in the areas of street, landscape, adventure, and portrait photography. I often like to find crossover in these areas.</p>
+      </div>
     </div>
   </section>
 
