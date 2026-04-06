@@ -25,9 +25,9 @@ window.PORTFOLIO_CONFIG = {
 
   // Hero text customisation
   HERO_EYEBROW: "Energetic Images",
-  HERO_TITLE_LINE1: "Surprising & energetic",
-  HERO_TITLE_LINE2: "glimpses at a fascinating world.",
-  HERO_DESC: "Visual stories that capture attention and imagination.",
+  HERO_TITLE_LINE1: "Surprising &",
+  HERO_TITLE_LINE2: "Energetic",
+  HERO_DESC: "glimpses at a fascinating world. Visual stories that capture attention and imagination.",
 
   // Supported image file extensions (lowercase)
   SUPPORTED_EXTENSIONS: ["jpg", "jpeg", "png", "webp", "avif"],
