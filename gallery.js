@@ -29,12 +29,13 @@
   const sortLoading   = document.getElementById('sortLoading');
 
   // Fullscreen viewer
-  const fsViewer = document.getElementById('fsViewer');
-  const fsImg    = document.getElementById('fsImg');
-  const fsClose  = document.getElementById('fsClose');
-  const fsPrev   = document.getElementById('fsPrev');
-  const fsNext   = document.getElementById('fsNext');
-  const fsCtr    = document.getElementById('fsCounter');
+  const fsViewer  = document.getElementById('fsViewer');
+  const fsImg     = document.getElementById('fsImg');
+  const fsClose   = document.getElementById('fsClose');
+  const fsPrev    = document.getElementById('fsPrev');
+  const fsNext    = document.getElementById('fsNext');
+  const fsCtr     = document.getElementById('fsCounter');
+  const fsContact = document.getElementById('fsContact');
 
   if (yearEl) yearEl.textContent = new Date().getFullYear();
   applyConfig();
@@ -377,6 +378,15 @@
     fsImg.src = p.url;
     fsImg.alt = p.name;
     if (fsCtr) fsCtr.textContent = (fsIndex + 1) + ' / ' + filteredPhotos.length;
+    // Update enquiry link to pre-fill the contact form with this image's name
+    if (fsContact) {
+      fsContact.href = '#contact';
+      fsContact.onclick = () => {
+        const field = document.getElementById('contactImage');
+        if (field) field.value = p.name;
+        closeFullscreen();
+      };
+    }
   }
 
   if (fsClose) fsClose.addEventListener('click', closeFullscreen);
@@ -418,6 +428,27 @@
   }
 
   // Scripts are deferred — DOM is guaranteed ready, just init
+  // ---- Contact form ----
+  const contactForm    = document.getElementById('contactForm');
+  const contactSuccess = document.getElementById('contactSuccess');
+  if (contactForm) {
+    contactForm.addEventListener('submit', e => {
+      e.preventDefault();
+      // Works with Netlify Forms (netlify attribute on form) or just shows success
+      const data = new FormData(contactForm);
+      fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(data).toString() })
+        .then(() => {
+          contactForm.style.display = 'none';
+          if (contactSuccess) contactSuccess.style.display = 'block';
+        })
+        .catch(() => {
+          // Fallback — show success anyway (Cloudflare Pages doesn't have Netlify Forms)
+          contactForm.style.display = 'none';
+          if (contactSuccess) contactSuccess.style.display = 'block';
+        });
+    });
+  }
+
   init();
 
 })();
