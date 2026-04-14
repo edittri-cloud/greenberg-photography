@@ -431,21 +431,28 @@
   // ---- Contact form ----
   const contactForm    = document.getElementById('contactForm');
   const contactSuccess = document.getElementById('contactSuccess');
+  const contactSubmit  = contactForm ? contactForm.querySelector('.contact-submit') : null;
+
   if (contactForm) {
-    contactForm.addEventListener('submit', e => {
+    contactForm.addEventListener('submit', async e => {
       e.preventDefault();
-      // Works with Netlify Forms (netlify attribute on form) or just shows success
-      const data = new FormData(contactForm);
-      fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(data).toString() })
-        .then(() => {
+      if (contactSubmit) { contactSubmit.disabled = true; contactSubmit.textContent = 'Sending…'; }
+
+      try {
+        const data = new FormData(contactForm);
+        const res  = await fetch('/api/contact', { method: 'POST', body: data });
+        if (res.ok) {
           contactForm.style.display = 'none';
           if (contactSuccess) contactSuccess.style.display = 'block';
-        })
-        .catch(() => {
-          // Fallback — show success anyway (Cloudflare Pages doesn't have Netlify Forms)
-          contactForm.style.display = 'none';
-          if (contactSuccess) contactSuccess.style.display = 'block';
-        });
+        } else {
+          const err = await res.json().catch(() => ({}));
+          alert('Sorry, there was a problem sending your message. Please try again.');
+          if (contactSubmit) { contactSubmit.disabled = false; contactSubmit.textContent = 'Send message'; }
+        }
+      } catch (err) {
+        alert('Sorry, there was a problem sending your message. Please try again.');
+        if (contactSubmit) { contactSubmit.disabled = false; contactSubmit.textContent = 'Send message'; }
+      }
     });
   }
 
