@@ -1,57 +1,60 @@
 // functions/api/contact.js
-// Handles contact form submissions and sends email via Cloudflare Email Routing
+// Handles contact form submissions via Cloudflare Email Routing
+// No external dependencies — builds MIME email manually
 
 import { EmailMessage } from "cloudflare:email";
-//import { createMimeMessage } from "mimetext";
 
 export async function onRequestPost(context) {
   const { env, request } = context;
 
-  // CORS headers
-  const headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-  };
+  const headers = { 'Content-Type': 'application/json' };
 
   if (!env.CONTACT_EMAIL) {
-    return new Response(JSON.stringify({ error: 'Email not configured.' }), { status: 500, headers });
+    return new Response(JSON.stringify({ error: 'Email binding not configured.' }), { status: 500, headers });
   }
 
   try {
     const formData = await request.formData();
-    const name    = (formData.get('name') || '').trim();
-    const email   = (formData.get('email') || '').trim();
-    const image   = (formData.get('image') || '').trim();
+    const name    = (formData.get('name')    || '').trim();
+    const email   = (formData.get('email')   || '').trim();
+    const image   = (formData.get('image')   || '').trim();
     const message = (formData.get('message') || '').trim();
 
     if (!name || !email || !message) {
       return new Response(JSON.stringify({ error: 'Missing required fields.' }), { status: 400, headers });
     }
 
-    // Build email
-    const msg = createMimeMessage();
-    msg.setSender({ name: 'Portfolio Contact Form', addr: 'contact@marcgreenbergphoto.com' });
-    msg.setRecipient(env.CONTACT_EMAIL.destination);
-    msg.setSubject(image ? `Enquiry about: ${image}` : `New contact from ${name}`);
-    msg.addMessage({
-      contentType: 'text/plain',
-      data: [
-        `Name: ${name}`,
-        `Email: ${email}`,
-        image ? `Image: ${image}` : '',
-        '',
-        `Message:`,
-        message,
-      ].filter(Boolean).join('\n'),
-    });
+    const subject = image
+      ? `Portfolio enquiry about: ${image}`
+      : `New portfolio contact from ${name}`;
 
-    const emailMsg = new EmailMessage(
+    const body = [
+      `Name: ${name}`,
+      `Email: ${email}`,
+      image ? `Image: ${image}` : null,
+      ``,
+      `Message:`,
+      message,
+    ].filter(line => line !== null).join('\r\n');
+
+    // Build a minimal valid MIME message with no external libraries
+    const raw = [
+      `MIME-Version: 1.0`,
+      `From: Portfolio Contact <contact@marcgreenbergphoto.com>`,
+      `To: ${env.CONTACT_EMAIL.destination}`,
+      `Subject: ${subject}`,
+      `Content-Type: text/plain; charset=utf-8`,
+      ``,
+      body,
+    ].join('\r\n');
+
+    const msg = new EmailMessage(
       'contact@marcgreenbergphoto.com',
       env.CONTACT_EMAIL.destination,
-      msg.asRaw()
+      raw
     );
 
-    await env.CONTACT_EMAIL.send(emailMsg);
+    await env.CONTACT_EMAIL.send(msg);
 
     return new Response(JSON.stringify({ ok: true }), { status: 200, headers });
 
@@ -61,7 +64,6 @@ export async function onRequestPost(context) {
   }
 }
 
-// Handle OPTIONS preflight
 export async function onRequestOptions() {
   return new Response(null, {
     headers: {
