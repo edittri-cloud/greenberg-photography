@@ -2,7 +2,7 @@
 // Handles contact form submissions and sends email via Cloudflare Email Routing
 
 import { EmailMessage } from "cloudflare:email";
-import { createMimeMessage } from "mimetext";
+//import { createMimeMessage } from "mimetext";
 
 export async function onRequestPost(context) {
   const { env, request } = context;
