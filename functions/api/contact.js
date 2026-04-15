@@ -1,16 +1,15 @@
 // functions/api/contact.js
-// Handles contact form submissions via Cloudflare Email Routing
-// No external dependencies — builds MIME email manually
-
 import { EmailMessage } from "cloudflare:email";
 
 export async function onRequestPost(context) {
   const { env, request } = context;
-
   const headers = { 'Content-Type': 'application/json' };
 
+  // Debug logging
+  console.log('CONTACT_EMAIL binding:', !!env.CONTACT_EMAIL);
+
   if (!env.CONTACT_EMAIL) {
-    return new Response(JSON.stringify({ error: 'Email binding not configured.' }), { status: 500, headers });
+    return new Response(JSON.stringify({ error: 'Email binding not configured. Check wrangler.toml [[send_email]] section.' }), { status: 500, headers });
   }
 
   try {
@@ -28,38 +27,39 @@ export async function onRequestPost(context) {
       ? `Portfolio enquiry about: ${image}`
       : `New portfolio contact from ${name}`;
 
-    const body = [
+    const bodyLines = [
       `Name: ${name}`,
       `Email: ${email}`,
-      image ? `Image: ${image}` : null,
-      ``,
-      `Message:`,
-      message,
-    ].filter(line => line !== null).join('\r\n');
+    ];
+    if (image) bodyLines.push(`Image: ${image}`);
+    bodyLines.push('', 'Message:', message);
 
-    // Build a minimal valid MIME message with no external libraries
     const raw = [
-      `MIME-Version: 1.0`,
-      `From: Portfolio Contact <contact@marcgreenbergphoto.com>`,
-      `To: ${env.CONTACT_EMAIL.destination}`,
+      'MIME-Version: 1.0',
+      'From: Portfolio Contact <contact@marcgreenbergphoto.com>',
+      'To: marcgreenbergphoto@gmail.com',
       `Subject: ${subject}`,
-      `Content-Type: text/plain; charset=utf-8`,
-      ``,
-      body,
+      'Content-Type: text/plain; charset=utf-8',
+      '',
+      ...bodyLines,
     ].join('\r\n');
 
+    console.log('Creating EmailMessage...');
     const msg = new EmailMessage(
       'contact@marcgreenbergphoto.com',
-      env.CONTACT_EMAIL.destination,
+      'marcgreenbergphoto@gmail.com',
       raw
     );
 
+    console.log('Sending...');
     await env.CONTACT_EMAIL.send(msg);
+    console.log('Sent OK');
 
     return new Response(JSON.stringify({ ok: true }), { status: 200, headers });
 
   } catch (err) {
-    console.error('Contact form error:', err);
+    console.error('Error:', err.message);
+    // Return the actual error so we can debug it
     return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
   }
 }
