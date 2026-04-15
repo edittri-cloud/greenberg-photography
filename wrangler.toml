@@ -5,7 +5,6 @@ compatibility_date = "2024-01-01"
 binding = "PHOTOS_BUCKET"
 bucket_name = "marc-greenberg-photo"
 
-# Email binding — replace with your verified destination email
 [[send_email]]
 name = "CONTACT_EMAIL"
-destination_address = "contact@marcgreenbergphoto.com"
+destination_address = "marcgreenbergphoto@gmail.com"
