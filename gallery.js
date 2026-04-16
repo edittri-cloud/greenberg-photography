@@ -427,11 +427,11 @@
     countEl.textContent = '—';
   }
 
-  // Scripts are deferred — DOM is guaranteed ready, just init
-  // ---- Contact form ----
+  // ---- Contact form — submits directly to Formspree from browser ----
   const contactForm    = document.getElementById('contactForm');
   const contactSuccess = document.getElementById('contactSuccess');
   const contactSubmit  = contactForm ? contactForm.querySelector('.contact-submit') : null;
+  const contactAgain   = document.getElementById('contactAgain');
 
   if (contactForm) {
     contactForm.addEventListener('submit', async e => {
@@ -440,19 +440,32 @@
 
       try {
         const data = new FormData(contactForm);
-        const res  = await fetch('/api/contact', { method: 'POST', body: data });
+        const res  = await fetch('https://formspree.io/f/mnjljrnv', {
+          method: 'POST',
+          headers: { 'Accept': 'application/json' },
+          body: data,
+        });
+        const json = await res.json().catch(() => ({}));
+
         if (res.ok) {
           contactForm.style.display = 'none';
           if (contactSuccess) contactSuccess.style.display = 'block';
         } else {
-          const err = await res.json().catch(() => ({}));
-          alert('Sorry, there was a problem sending your message. Please try again.');
+          alert('Sorry — ' + (json.error || 'there was a problem. Please try again.'));
           if (contactSubmit) { contactSubmit.disabled = false; contactSubmit.textContent = 'Send message'; }
         }
       } catch (err) {
         alert('Sorry, there was a problem sending your message. Please try again.');
         if (contactSubmit) { contactSubmit.disabled = false; contactSubmit.textContent = 'Send message'; }
       }
+    });
+  }
+
+  if (contactAgain) {
+    contactAgain.addEventListener('click', () => {
+      if (contactForm)    { contactForm.reset(); contactForm.style.display = 'flex'; }
+      if (contactSuccess) { contactSuccess.style.display = 'none'; }
+      if (contactSubmit)  { contactSubmit.disabled = false; contactSubmit.textContent = 'Send message'; }
     });
   }
 
