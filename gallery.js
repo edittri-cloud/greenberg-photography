@@ -446,12 +446,11 @@
           if (contactSuccess) contactSuccess.style.display = 'block';
         } else {
           const err = await res.json().catch(() => ({}));
-          const errData = await res.json().catch(() => ({}));
-          alert('Error: ' + (errData.error || 'Unknown error. Check browser console.'));
+          alert('Sorry, there was a problem sending your message. Please try again.');
           if (contactSubmit) { contactSubmit.disabled = false; contactSubmit.textContent = 'Send message'; }
         }
       } catch (err) {
-        alert('Network error: ' + err.message);
+        alert('Sorry, there was a problem sending your message. Please try again.');
         if (contactSubmit) { contactSubmit.disabled = false; contactSubmit.textContent = 'Send message'; }
       }
     });
