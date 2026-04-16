@@ -838,11 +838,32 @@
 
     .contact-success {
       display: none;
+      padding: 16px 0;
+    }
+
+    .contact-success p {
       color: var(--accent);
       font-size: 13px;
       letter-spacing: 0.05em;
-      padding: 16px 0;
+      margin-bottom: 16px;
     }
+
+    .contact-again {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+      padding: 0;
+      transition: color 0.3s;
+    }
+    .contact-again:hover { color: var(--text); }
 
     @media (max-width: 680px) {
       .contact-section { padding: 48px 20px 64px; }
@@ -989,23 +1010,26 @@
     <form class="contact-form" id="contactForm">
       <div class="contact-field">
         <label class="contact-label" for="contactName">Name</label>
-        <input class="contact-input" type="text" id="contactName" name="name" required>
+        <input class="contact-input" type="text" id="contactName" name="name" autocomplete="name" required>
       </div>
       <div class="contact-field">
         <label class="contact-label" for="contactEmail">Email</label>
-        <input class="contact-input" type="email" id="contactEmail" name="email" required>
+        <input class="contact-input" type="email" id="contactEmail" name="email" autocomplete="email" required>
       </div>
       <div class="contact-field">
         <label class="contact-label" for="contactImage">Image (optional)</label>
-        <input class="contact-input" type="text" id="contactImage" name="image" placeholder="Image name or description">
+        <input class="contact-input" type="text" id="contactImage" name="image" autocomplete="off" placeholder="Image name or description">
       </div>
       <div class="contact-field">
         <label class="contact-label" for="contactMessage">Message</label>
-        <textarea class="contact-textarea" id="contactMessage" name="message" required></textarea>
+        <textarea class="contact-textarea" id="contactMessage" name="message" autocomplete="off" required></textarea>
       </div>
       <button class="contact-submit" type="submit">Send message</button>
-      <p class="contact-success" id="contactSuccess">Thank you — message sent.</p>
     </form>
+    <div class="contact-success" id="contactSuccess">
+      <p>Thank you — your message has been sent.</p>
+      <button class="contact-again" id="contactAgain">Send another message</button>
+    </div>
   </section>
 
   <footer>
