@@ -135,24 +135,32 @@
       object-fit: contain;
       object-position: center;
       filter: brightness(0.85) saturate(0.85);
+      /* Use z-index swap instead of opacity to avoid HDR flicker on mobile */
+      z-index: 0;
       opacity: 0;
-      transition: opacity 1.4s ease;
-      background: transparent;
-      /* Force GPU compositing layer — prevents HDR tone-mapping flicker on mobile */
       transform: translateZ(0);
       -webkit-transform: translateZ(0);
-      will-change: opacity;
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
     }
 
     .hero-slide.active {
+      z-index: 1;
       opacity: 1;
+      transition: opacity 0.01s;
     }
 
     .hero-slide.leaving {
+      z-index: 0;
       opacity: 0;
-      transition: opacity 1.4s ease;
+      transition: opacity 0.01s 1.2s; /* delay matches the cross-dissolve feel */
+    }
+
+    .hero-slide.dissolve-in {
+      animation: heroDissolve 1.4s ease forwards;
+    }
+
+    @keyframes heroDissolve {
+      from { opacity: 0; }
+      to   { opacity: 1; }
     }
 
     .hero-photo-overlay {
@@ -307,16 +315,16 @@
       height: 340px;
       position: relative;
       overflow: visible;
-      transition: transform 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                  opacity 0.18s ease;
-      opacity: 0.55;
+      /* Only animate transform — avoids opacity/filter GPU issues on mobile */
+      transition: transform 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       transform: scale(0.88);
+      cursor: default;
     }
 
     .strip-item.focused {
-      opacity: 1;
       transform: scale(1.0);
       z-index: 2;
+      cursor: zoom-in;
     }
 
     .strip-item img {
@@ -324,19 +332,17 @@
       width: auto;
       display: block;
       object-fit: contain;
-      filter: brightness(0.85);
-      transition: filter 0.18s;
+      /* Use brightness only — no transition to avoid flicker on mobile */
+      filter: brightness(0.55) saturate(0.8);
       pointer-events: none;
       -webkit-user-drag: none;
       -webkit-user-select: none;
       user-select: none;
+      transform: translateZ(0);
     }
 
-    .strip-item.focused img { filter: brightness(1); }
-
-    /* Zoom cursor on focused item — signals click opens fullscreen */
-    .strip-item.focused {
-      cursor: zoom-in;
+    .strip-item.focused img {
+      filter: brightness(1) saturate(1);
     }
 
     .strip-item-overlay { display: none; }

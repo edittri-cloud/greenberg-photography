@@ -126,19 +126,27 @@
         heroDots.appendChild(dot);
       }
     });
-    heroRight.querySelectorAll('.hero-slide')[0].classList.add('active');
+    heroRight.querySelectorAll('.hero-slide')[0].classList.add('active', 'dissolve-in');
     if (keys.length > 1) setInterval(() => heroGoTo((heroIndex + 1) % heroSlides.length), 4000);
   }
 
   function heroGoTo(index) {
     const slides = heroRight.querySelectorAll('.hero-slide');
     const dots   = heroDots ? heroDots.querySelectorAll('.hero-dot') : [];
-    slides[heroIndex].classList.remove('active'); slides[heroIndex].classList.add('leaving');
+
+    // Remove dissolve-in from previous active before transitioning
+    slides[heroIndex].classList.remove('active', 'dissolve-in');
+    slides[heroIndex].classList.add('leaving');
     if (dots[heroIndex]) dots[heroIndex].classList.remove('active');
+
     heroIndex = index;
+
+    // Force reflow so animation restarts cleanly
     void slides[heroIndex].offsetWidth;
-    slides[heroIndex].classList.remove('leaving'); slides[heroIndex].classList.add('active');
+    slides[heroIndex].classList.remove('leaving');
+    slides[heroIndex].classList.add('active', 'dissolve-in');
     if (dots[heroIndex]) dots[heroIndex].classList.add('active');
+
     setTimeout(() => slides.forEach(s => s.classList.remove('leaving')), 1400);
   }
 
