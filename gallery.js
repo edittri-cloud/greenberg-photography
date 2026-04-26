@@ -8,7 +8,8 @@
   const cfg         = window.PORTFOLIO_CONFIG || {};
   const BUCKET_URL  = (cfg.R2_BUCKET_URL || '').replace(/\/$/, '');
   const EXTENSIONS  = cfg.SUPPORTED_EXTENSIONS || ['jpg','jpeg','png','webp','avif'];
-  const HERO_FOLDER = cfg.HERO_FOLDER || 'hero';
+  const HERO_FOLDER    = cfg.HERO_FOLDER    || 'hero';
+  const BIO_PIC_FOLDER = cfg.BIO_PIC_FOLDER || 'bio_pic';
 
   // DOM
   const countEl       = document.getElementById('photoCount');
@@ -77,10 +78,15 @@
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
-      const heroKeys    = (data.photos || []).filter(k => k.split('/')[0] === HERO_FOLDER && isImage(k));
-      const galleryKeys = (data.photos || []).filter(k => k.split('/')[0] !== HERO_FOLDER && isImage(k) && !k.startsWith('.'));
+      const heroKeys    = (data.photos || []).filter(k => k.split('/')[0] === HERO_FOLDER    && isImage(k));
+      const bioPicKeys  = (data.photos || []).filter(k => k.split('/')[0] === BIO_PIC_FOLDER && isImage(k));
+      const galleryKeys = (data.photos || []).filter(k => {
+        const folder = k.split('/')[0];
+        return folder !== HERO_FOLDER && folder !== BIO_PIC_FOLDER && isImage(k) && !k.startsWith('.');
+      });
 
       loadHeroSlides(heroKeys);
+      loadBioPic(bioPicKeys);
 
       allPhotos = galleryKeys.sort().map(keyToPhoto);
       if (allPhotos.length === 0) { showEmpty(); return; }
@@ -148,6 +154,18 @@
     if (dots[heroIndex]) dots[heroIndex].classList.add('active');
 
     setTimeout(() => slides.forEach(s => s.classList.remove('leaving')), 1400);
+  }
+
+  // ---- Bio Picture ----
+  function loadBioPic(keys) {
+    const container = document.getElementById('aboutBioPic');
+    if (!container || !keys.length) return;
+    const url = BUCKET_URL + '/' + keys[0].split('/').map(encodeURIComponent).join('/');
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = 'Photographer';
+    img.loading = 'lazy';
+    container.appendChild(img);
   }
 
   // ---- Filter Bar ----

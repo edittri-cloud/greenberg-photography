@@ -61,6 +61,23 @@
       background: linear-gradient(to bottom, rgba(10,10,10,0.95) 0%, transparent 100%);
     }
 
+    @media (max-width: 680px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 16px 20px 12px;
+        background: rgba(10,10,10,0.97);
+      }
+      .logo { width: 100%; font-size: 18px; }
+      nav { width: 100%; justify-content: flex-end; gap: 20px; }
+      /* Hero and sections need more top padding on mobile due to taller header */
+      .hero { padding-top: 110px; }
+      .gallery-section { padding-top: 110px; }
+      .about-section { padding-top: 110px; }
+      .contact-section { padding-top: 110px; }
+    }
+
     .logo {
       font-family: 'Cormorant Garamond', serif;
       font-size: 22px;
@@ -234,10 +251,11 @@
     /* Gallery Section */
     .gallery-section {
       padding: 32px 48px 80px;
+      scroll-margin-top: 88px;
     }
 
     @media (max-width: 680px) {
-      .gallery-section { padding: 20px 16px 60px; }
+      .gallery-section { padding: 20px 16px 60px; scroll-margin-top: 110px; }
     }
 
     .section-header {
@@ -440,7 +458,7 @@
 
     .fs-counter {
       position: fixed;
-      bottom: 28px;
+      bottom: 56px;
       left: 50%;
       transform: translateX(-50%);
       font-size: 11px;
@@ -712,6 +730,7 @@
     .about-section {
       padding: 80px 48px 100px;
       max-width: 860px;
+      scroll-margin-top: 88px;
     }
 
     .about-eyebrow {
@@ -719,7 +738,26 @@
       letter-spacing: 0.25em;
       text-transform: uppercase;
       color: var(--accent);
-      margin-bottom: 48px;
+      margin-bottom: 32px;
+    }
+
+    .about-bio-pic {
+      margin-bottom: 40px;
+    }
+
+    .about-bio-pic img {
+      width: 160px;
+      height: 160px;
+      object-fit: cover;
+      object-position: center top;
+      border-radius: 50%;
+      display: block;
+      filter: brightness(0.95) saturate(0.85);
+      border: 1px solid var(--border);
+    }
+
+    @media (max-width: 680px) {
+      .about-bio-pic img { width: 120px; height: 120px; }
     }
 
     .about-block {
@@ -761,6 +799,7 @@
     .contact-section {
       padding: 80px 48px 100px;
       max-width: 600px;
+      scroll-margin-top: 88px;
     }
 
     .contact-eyebrow {
@@ -879,7 +918,7 @@
     .fs-contact {
       position: fixed;
       bottom: 28px;
-      right: 32px;
+      left: 32px;
       font-size: 10px;
       letter-spacing: 0.15em;
       text-transform: uppercase;
@@ -998,6 +1037,8 @@
 
   <section class="about-section" id="about">
     <p class="about-eyebrow">The photographer</p>
+
+    <div class="about-bio-pic" id="aboutBioPic"></div>
 
     <div class="about-block">
       <h2 class="about-heading">Artist Statement</h2>
