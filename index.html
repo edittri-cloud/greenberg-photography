@@ -744,21 +744,16 @@
     .about-bio-pic {
       margin-bottom: 48px;
       width: 100%;
-      height: 520px; /* matches hero min-height */
-      overflow: hidden;
+      max-width: 520px; /* same figure as hero height — constrains width */
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .about-bio-pic img {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center top;
+      height: auto; /* natural aspect ratio, no cropping */
       display: block;
       filter: brightness(0.95) saturate(0.85);
-    }
-
-    @media (max-width: 680px) {
-      .about-bio-pic { height: 260px; } /* matches stacked hero photo panel */
     }
 
     .about-block {
