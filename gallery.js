@@ -390,6 +390,9 @@
   function closeFullscreen() {
     fsViewer.classList.remove('open');
     document.body.style.overflow = '';
+    // Sync strip to whichever image was active when viewer was closed
+    setFocus(fsIndex);
+    scrollToFocused('smooth');
   }
 
   function fsGoTo(index) {
